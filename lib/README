@@ -36,3 +36,6 @@ log4j-1.2.17.jar
 * logging.apache.org/log4j/1.2/
 * Apache Software license 2.0
 
+parserlib.jar
+* https://github.com/6031-fa17/ex18-parsers
+* From MIT course 6.031, Fall 2017, developed by the course staff

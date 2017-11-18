@@ -15,6 +15,9 @@ public interface QueryTree {
      */
     
     // TODO: static factory methods
+    public static QueryTree scan(String tableName) {
+        return new QScan(tableName);
+    }
     
     /**
      * Overriding the toString method, the returning String
