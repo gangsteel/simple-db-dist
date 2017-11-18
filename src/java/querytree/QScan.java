@@ -10,7 +10,7 @@ class QScan implements QueryTree {
     
     @Override
     public String toString() {
-        return "SCAN(" + tableName + ")"; //TODO: Confirm with the grammar
+        return "SCAN(" + tableName + ")";
     }
     
     @Override
