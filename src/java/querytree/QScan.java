@@ -2,15 +2,15 @@ package querytree;
 
 class QScan implements QueryTree {
     
-    private final int tableid;
+    private final String tableName;
     
-    QScan(int tableid) {
-        this.tableid = tableid;
+    QScan(String name) {
+        tableName = name;
     }
     
     @Override
     public String toString() {
-        return "SCAN(" + tableid + ")"; //TODO: Confirm with the grammar
+        return "SCAN(" + tableName + ")";
     }
     
     @Override
