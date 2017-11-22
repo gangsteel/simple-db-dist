@@ -16,8 +16,7 @@ import querytree.QAggregate.Agg;
  */
 public class QueryParser {
 
-    // FIXME: made this public so we could instantiate from head node
-    public QueryParser() {} // This should be a static class
+    private QueryParser() {} // This should be a static class
     
     private enum QueryGrammar {COMMANDS, SCAN, FILTER, AGGREGATE, WORDS, NUMBER, PRED, AGGREGATOR, WHITESPACE};
     
@@ -104,9 +103,5 @@ public class QueryParser {
         default:
             throw new AssertionError("should never get here");
         }
-    }
-
-    public void start(){
-
     }
 }
