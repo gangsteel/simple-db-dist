@@ -25,8 +25,10 @@ public class HeadNode {
 
     private final List<String> childrenIps = new ArrayList<>();
     private final List<Integer> childrenPorts = new ArrayList<>();
-    
+    private Result result;
+
     public HeadNode(){
+        this.result = null;
     }
     
     /**
@@ -65,15 +67,19 @@ public class HeadNode {
         }
     }
 
-    public void processQuery(QueryTree queryTree){
+    public Result processQuery(QueryTree queryTree){
+        this.result = new Result(queryTree);
         for (int i = 0; i < childrenIps.size(); i++){
             final String ip = childrenIps.get(i);
             final int port = childrenPorts.get(i);
             Thread t = new Thread(new ChildConnection(ip, port, queryTree));
             t.start();
         }
+        return this.result;
     }
-    
+
+
+
     private class ChildConnection implements Runnable {
         private final String childIp;
         private final int childPort;
@@ -97,6 +103,7 @@ public class HeadNode {
             for (String line = in.readLine(); !line.equals("END"); line = in.readLine()) {
                 // TODO: synchronized control
                 System.out.println(line);
+                result.merge(line);
             }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -105,10 +112,6 @@ public class HeadNode {
         }
     }
 
-    public void finishProcessing(){
-        // TODO: Not sure what this is
-    }
-    
     /**
      * The main function to start head node and accepting client's requests
      * @param args TODO

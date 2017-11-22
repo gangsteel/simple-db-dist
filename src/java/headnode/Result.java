@@ -16,6 +16,17 @@ public class Result {
 
     }
 
+    public void merge(String stringTup){
+        Tuple t = stringToTuple(stringTup);
+        this.hits.add(t);
+    }
+
+    public Tuple stringToTuple(String res){
+        //TODO: make a getTupleDesc function in QueryTree. Use that to parse out structure.
+        return null;
+
+    }
+
 
 
 

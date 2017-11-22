@@ -18,9 +18,12 @@ import querytree.QueryTree;
  */
 public class NodeServer {
     private final ServerSocket serverSocket;
+    private final Database db;
     
     public NodeServer(int portNumber) throws IOException {
         serverSocket = new ServerSocket(portNumber);
+        //TODO: change simpledb so we pass instances of database around
+        db = Database.getNewInstance();
     }
     
     /**
@@ -69,12 +72,8 @@ public class NodeServer {
                 }
                 try {
                     QueryTree qt = QueryParser.parse(line);
+                    processQuery(qt, out);
                     // Some trash for now. TODO: run the query and return the results
-                    out.println("1,2,3");
-                    out.println("4,5,6");
-                    out.println("7,8,9");
-                    out.println("It's garbage now!");
-                    out.println("END");
                 } catch (UnableToParseException e) {
                     out.println("Unable to parse your command!"); // TODO: More information
                 }
@@ -84,6 +83,27 @@ public class NodeServer {
                     + socket.getPort() + " is leaving.");
             out.close();
             in.close();
+        }
+    }
+
+    private void processQuery(QueryTree queryTree, PrintWriter outputStream){
+        OpIterator op = queryTree.getRootOp();
+        try {
+            while (op.hasNext()) {
+                Tuple t = op.next();
+                outputStream.println(t.toString());
+            }
+        }
+        catch(DbException e){
+            System.out.println("There was an error processing query");
+            e.printStackTrace();
+            //TODO: do error handling
+        }
+        catch(TransactionAbortedException e){
+            System.out.println("Transaction aborted while processing query");
+            e.printStackTrace();
+            //TODO: do error handling
+
         }
     }
     

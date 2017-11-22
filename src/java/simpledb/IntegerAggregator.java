@@ -122,6 +122,7 @@ public class IntegerAggregator implements Aggregator {
         }
     }
 
+
     /**
      * Create a OpIterator over group aggregate results.
      * 

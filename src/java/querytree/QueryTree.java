@@ -1,5 +1,9 @@
 package querytree;
 
+import simpledb.OpIterator;
+import simpledb.Predicate;
+import simpledb.TupleDesc;
+
 /**
  * Abstract recursive data type representing a query tree structure
  * that can be converted from a String command and to a String command
@@ -15,18 +19,24 @@ public interface QueryTree {
      */
     
     // TODO: static factory methods
-    public static QueryTree scan(String tableName) {
-        return new QScan(tableName);
+    public static QueryTree scan(String alias, int tableid) {
+        return new QScan(alias, tableid);
     }
     
-    public static QueryTree filter(QueryTree child, int colNum, QFilter.Pred pred, int operand) {
+    public static QueryTree filter(QueryTree child, int colNum, Predicate pred, int operand) {
         return new QFilter(child, colNum, pred, operand);
     }
     
     public static QueryTree aggregate(QueryTree child, int colNum, QAggregate.Agg aggregator) {
         return new QAggregate(child, colNum, aggregator);
     }
-    
+
+    public OpIterator getRootOp();
+
+
+
+
+
     /**
      * Overriding the toString method, the returning String
      * must be parsable by QueryParser.parse and turn back to equal QueryTree:

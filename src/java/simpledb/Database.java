@@ -78,4 +78,9 @@ public class Database {
         _instance.set(new Database());
     }
 
+    public static Database getNewInstance(){
+        //TODO: see if this is ok?
+        return new Database();
+    }
+
 }
