@@ -90,6 +90,9 @@ public class SimpleDb {
             }
 
         }
+        else if (args[0].equals("serve")) {
+            NodeServer.main(new String[1]); //TODO some port number here
+        }
         else {
             System.err.println("Unknown command: " + args[0]);
             System.exit(1);

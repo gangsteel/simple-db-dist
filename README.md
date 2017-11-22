@@ -7,6 +7,9 @@ Now the NodeServer is able to accept incoming connections.
 To test it on your own computer, find NodeServer class under simpledb package,
 run it as an application (the main function) in Eclipse or whatever.
 
+(Or use ant to build the package and run "java -jar dist/simpledb.jar serve" more arguments
+need to be added)
+
 Now you can login the server using telnet from your own computer:
 
 telnet localhost 4444
