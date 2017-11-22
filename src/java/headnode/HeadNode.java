@@ -1,15 +1,17 @@
 package headnode;
 
-import childnode.ChildNode;
 import querytree.QueryParser;
 import querytree.QueryTree;
-import simpledb.LogicalPlan;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.mit.eecs.parserlib.UnableToParseException;
 
 /**
  * The class running on the head node, accepting user command (CLI),
@@ -18,104 +20,108 @@ import java.util.*;
  * way to communicate with it should be a network protocol. (Correct it if this is wrong)
  */
 public class HeadNode {
+    
+    private static final String LOCALHOST = "127.0.0.1";
 
-    private class ChildConnection implements Runnable{
-        private ChildNode child;
-        private QueryTree queryTree;
-        public ChildConnection(ChildNode child, QueryTree queryTree){
-            this.child = child;
-            this.queryTree = queryTree;
-        }
-        @Override
-        public void run() {
-            try {
-                Socket s = new Socket("localhost", this.child.getPort());
-                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-                out.writeObject(this.queryTree);
-                ObjectInputStream in = new ObjectInputStream(s.getInputStream());
-                //TODO: set timeout for reading
-                int count = 0;
-                while (count < 100) {
-                    //TODO: cast this to whatever it's supposed to be
-                    Object o = in.readObject();
-                    synchronized(this) {
-                        mergeResults(o);
-                    }
-                    count ++;
-                }
-            }
-            catch(IOException e){
-                e.printStackTrace();
-                return;
-            }
-            catch(ClassNotFoundException e){
-                e.printStackTrace();
-                return;
-            }
-            finally{
-                synchronized (this){
-                    numComplete++;
-                    if (numComplete == children.size()){
-                        finishProcessing();
-
-                    }
-                }
-
-            }
-        }
-    }
-
-    //FIXME: I'm not entirely sure why we have so many separate packages?
-    //TODO: look into rpc frameworks
-    private final List<ChildNode> children = new ArrayList<>();
-    private QueryParser parser;
-    private int numComplete;
+    private final List<String> childrenIps = new ArrayList<>();
+    private final List<Integer> childrenPorts = new ArrayList<>();
+    
     public HeadNode(){
-        this.parser = new QueryParser();
-        this.numComplete = 0;
+    }
+    
+    /**
+     * Add a child node to the head node
+     * @param childIp the child IP address represented by a String
+     * @param childPort the port of the child node
+     */
+    public void addChildNode(String childIp, int childPort) {
+        // TODO: check format of the child IP
+        childrenIps.add(childIp);
+        childrenPorts.add(childPort);
     }
 
-    public String getInput(){
-        //TODO: Make sure input is valid... maybe do this in the QueryParser
-        Scanner s = new Scanner(System.in);
-        String query = "";
-        while(s.hasNextLine()){
-            query += s.nextLine();
+    /**
+     * Start the command line interface to accept client typing queries
+     * @throws IOException if the I/O is interrupted
+     */
+    public void getInput() throws IOException{
+        final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        while (true) {
+            System.out.print("SimpleDist> ");
+            final String input = in.readLine();
+            if (input.equals("exit")) {
+                return;
+            } else if (input.equals("help")) {
+                System.out.println("Hello there! The programmer are still helping themselves.");
+                // TODO: Some help messages
+            } else {
+                try {
+                    QueryTree qt = QueryParser.parse(input);
+                    processQuery(qt);
+                } catch (UnableToParseException e) {
+                    System.out.println("Wrong syntax. Type 'help' for help.");
+                }
+            }
         }
-        return query;
     }
 
-    // maintain a list of child nodes and
-    public QueryTree generateTree(String query){
-        QueryTree tree = this.parser.parse(query);
-        return tree;
-    }
-
-    public void processQuery(){
-        //TODO: make query plan class or figure out how this is handled in simpledb... Logical plan??
-        this.numComplete  = 0;
-        String query = this.getInput();
-        QueryTree queryTree = this.generateTree(query);
-        for (ChildNode node: this.children){
-            Thread t = new Thread(new ChildConnection(node, queryTree));
+    public void processQuery(QueryTree queryTree){
+        for (int i = 0; i < childrenIps.size(); i++){
+            final String ip = childrenIps.get(i);
+            final int port = childrenPorts.get(i);
+            Thread t = new Thread(new ChildConnection(ip, port, queryTree));
             t.start();
         }
     }
-
-    public void mergeResults(Object o){
-
+    
+    private class ChildConnection implements Runnable {
+        private final String childIp;
+        private final int childPort;
+        private final QueryTree queryTree;
+        
+        public ChildConnection(String childIp, int childPort, QueryTree queryTree){
+            this.childIp = childIp;
+            this.childPort = childPort;
+            this.queryTree = queryTree;
+        }
+        
+        @Override
+        public void run() {
+            try {
+            Socket s = new Socket(childIp, childPort);
+            // TODO: Maybe some timeout here
+            BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+            out.println(queryTree.toString());
+            
+            for (String line = in.readLine(); !line.equals("END"); line = in.readLine()) {
+                // TODO: synchronized control
+                System.out.println(line);
+            }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+                // TODO: Some error handling
+            }
+        }
     }
 
     public void finishProcessing(){
-
+        // TODO: Not sure what this is
     }
-
-    // Constructor
-    // Command line user interface
-
-    // TODO: for writing (later)
-    public ChildNode determineDestinationNode(){
-        return null;
+    
+    /**
+     * The main function to start head node and accepting client's requests
+     * @param args TODO
+     */
+    public static void main(String[] args) {
+        // TODO: command line arguments for children ips/ports parse format: #.#.#.#:# using regex
+        HeadNode head = new HeadNode();
+        head.addChildNode(LOCALHOST, 4444); //TODO: Just for test purpose
+        try {
+            head.getInput();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

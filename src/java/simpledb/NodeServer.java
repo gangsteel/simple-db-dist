@@ -74,6 +74,7 @@ public class NodeServer {
                     out.println("4,5,6");
                     out.println("7,8,9");
                     out.println("It's garbage now!");
+                    out.println("END");
                 } catch (UnableToParseException e) {
                     out.println("Unable to parse your command!"); // TODO: More information
                 }

@@ -1,6 +1,8 @@
 package simpledb;
 import java.io.*;
 
+import headnode.HeadNode;
+
 public class SimpleDb {
     public static void main (String args[])
             throws DbException, TransactionAbortedException, IOException {
@@ -92,6 +94,9 @@ public class SimpleDb {
         }
         else if (args[0].equals("serve")) {
             NodeServer.main(new String[1]); //TODO some port number here
+        }
+        else if (args[0].equals("client")) {
+            HeadNode.main(new String[1]); // TODO many many input should be parsed here or there
         }
         else {
             System.err.println("Unknown command: " + args[0]);
