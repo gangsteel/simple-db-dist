@@ -1,8 +1,9 @@
 @skip whitespace {
-    commands ::= scan | filter | aggregate;
+    commands ::= scan | filter | aggregate | join;
     scan ::= 'SCAN' '(' words ')';
     filter ::= 'FILTER' '(' commands ',' number pred number ')';
     aggregate ::= 'AGGREGATE' '(' commands ',' number ',' aggregator ')';
+    join ::= 'JOIN' '(' commands ',' commands ',' number pred number ')';
 }
 
 words ::= ([A-Z] | [a-z] | [0-9] | [_.-])+;

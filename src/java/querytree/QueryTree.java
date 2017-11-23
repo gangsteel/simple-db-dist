@@ -31,6 +31,10 @@ public interface QueryTree {
         return new QAggregate(child, colNum, aggregator);
     }
 
+    public static QueryTree join(QueryTree child1, QueryTree child2, int colNum1, Predicate.Op op, int colNum2) {
+        return new QJoin(child1, child2, colNum1, op, colNum2);
+    }
+
     public OpIterator getRootOp();
 
 

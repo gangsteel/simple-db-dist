@@ -21,7 +21,7 @@ public class QueryParser {
     private QueryParser() {
     } // This should be a static class
 
-    private enum QueryGrammar {COMMANDS, SCAN, FILTER, AGGREGATE, WORDS, NUMBER, PRED, AGGREGATOR, WHITESPACE};
+    private enum QueryGrammar {COMMANDS, SCAN, FILTER, AGGREGATE, WORDS, NUMBER, PRED, AGGREGATOR, WHITESPACE, JOIN};
 
     private static final Parser<QueryGrammar> PARSER = makeParser();
 
@@ -62,6 +62,15 @@ public class QueryParser {
                 final int colNum = Integer.parseInt(children.get(1).text());
                 final Agg agg = convertNameToAgg(children.get(2).text());
                 return QueryTree.aggregate(child, colNum, agg);
+            }
+            case JOIN: {
+                final List<ParseTree<QueryGrammar>> children = tree.children();
+                final QueryTree child1 = makeQueryTree(node, children.get(0));
+                final QueryTree child2 = makeQueryTree(node, children.get(1));
+                final int colNum1 = Integer.parseInt(children.get(2).text());
+                final Predicate.Op op = convertSignToPred(children.get(3).text());
+                final int colNum2 = Integer.parseInt(children.get(4).text());
+                return QueryTree.join(child1, child2, colNum1, op, colNum2);
             }
             default:
                 throw new AssertionError("should never get here or not implemented:" + tree);

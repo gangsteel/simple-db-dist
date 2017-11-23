@@ -38,7 +38,7 @@ public class Predicate implements Serializable {
             if (this == LIKE)
                 return "LIKE";
             if (this == NOT_EQUALS)
-                return "<>";
+                return "!=";
             throw new IllegalStateException("impossible to reach here");
         }
 

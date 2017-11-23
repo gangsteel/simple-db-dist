@@ -17,6 +17,8 @@ public class test {
             System.out.println(testTree);
             testTree = QueryParser.parse(null, "  FILTER  (  AGGREGATE ( FILTER  ( SCAN ( _a-b.2c012   ) , 3   != 5  ) , 5, AVG  ), 8 <=4 )   " );
             System.out.println(testTree);
+            testTree = QueryParser.parse(null, " JOIN ( SCAN ( table1 ), SCAN ( table2 ), 3 <= 5 )");
+            System.out.println(testTree);
         } catch (UnableToParseException e) {
             throw new RuntimeException(e);
         }
