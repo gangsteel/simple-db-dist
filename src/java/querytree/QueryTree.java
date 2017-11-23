@@ -18,9 +18,9 @@ public interface QueryTree {
      */
     
     // TODO: static factory methods
-    public static QueryTree scan(String name, String alias) {
+    public static QueryTree scan(NodeServer node, String name, String alias) {
         // TODO: Alias must be the same as name? It seems that eventually, we pass in the alias to the other nodes.
-        return new QScan(name, alias);
+        return new QScan(node, name, alias);
     }
     
     public static QueryTree filter(QueryTree child, int colNum, Predicate.Op pred, Field operand) {
@@ -31,7 +31,7 @@ public interface QueryTree {
         return new QAggregate(child, colNum, aggregator);
     }
 
-    public OpIterator getRootOp(NodeServer node);
+    public OpIterator getRootOp();
 
 
 

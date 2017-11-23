@@ -35,7 +35,7 @@ class QAggregate implements QueryTree {
     }
 
     @Override
-    public OpIterator getRootOp(NodeServer node) {
+    public OpIterator getRootOp() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
     

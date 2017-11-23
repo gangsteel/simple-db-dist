@@ -8,6 +8,7 @@ import java.util.List;
 import edu.mit.eecs.parserlib.ParseTree;
 import edu.mit.eecs.parserlib.UnableToParseException;
 
+import networking.NodeServer;
 import querytree.QAggregate.Agg;
 import simpledb.IntField;
 import simpledb.Predicate;
@@ -33,23 +34,23 @@ public class QueryParser {
         }
     }
 
-    public static QueryTree parse(String command) throws UnableToParseException {
+    public static QueryTree parse(NodeServer node, String command) throws UnableToParseException {
         final ParseTree<QueryGrammar> parseTree = PARSER.parse(command);
-        return makeQueryTree(parseTree);
+        return makeQueryTree(node, parseTree);
     }
 
-    private static QueryTree makeQueryTree(final ParseTree<QueryGrammar> tree) {
+    private static QueryTree makeQueryTree(NodeServer node, final ParseTree<QueryGrammar> tree) {
         switch (tree.name()) {
             case COMMANDS: {
-                return makeQueryTree(tree.children().get(0));
+                return makeQueryTree(node, tree.children().get(0));
             }
             case SCAN: {
                 final String tableName = tree.children().get(0).text();
-                return QueryTree.scan(tableName, tableName);
+                return QueryTree.scan(node, tableName, tableName);
             }
             case FILTER: {
                 final List<ParseTree<QueryGrammar>> children = tree.children();
-                final QueryTree child = makeQueryTree(children.get(0));
+                final QueryTree child = makeQueryTree(node, children.get(0));
                 final int colNum = Integer.parseInt(children.get(1).text());
                 final Predicate.Op pred = convertSignToPred(children.get(2).text());
                 final int operand = Integer.parseInt(children.get(3).text());
@@ -57,7 +58,7 @@ public class QueryParser {
             }
             case AGGREGATE: {
                 final List<ParseTree<QueryGrammar>> children = tree.children();
-                final QueryTree child = makeQueryTree(children.get(0));
+                final QueryTree child = makeQueryTree(node, children.get(0));
                 final int colNum = Integer.parseInt(children.get(1).text());
                 final Agg agg = convertNameToAgg(children.get(2).text());
                 return QueryTree.aggregate(child, colNum, agg);

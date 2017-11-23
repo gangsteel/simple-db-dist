@@ -77,10 +77,12 @@ public class SingleMachineTest {
             headNode.addChildNode(Global.LOCALHOST, node.getPort());
         }
 
-        // Make the queries manually and pass them to the HeadNode
+        // Make the queries manually and pass them to the HeadNode. Note that we use null NodeServer because the query
+        // does not correspond to any NodeServer. Since the toString() method does not depend on a NodeServer, and all
+        // HeadNode does is relay this String to other NodeServers, this works.
         LOGGER.log(Level.INFO, "Handling query...");
         String tableName = "table1";
-        QueryTree query = QueryTree.scan(tableName, tableName);
+        QueryTree query = QueryTree.filter(QueryTree.scan(null, tableName, tableName), 1, Predicate.Op.EQUALS, new IntField(8001));
         headNode.processQuery(query);
 
         // Finished!

@@ -13,13 +13,14 @@ class QFilter implements QueryTree {
         this.predicate = new Predicate(colNum, pred, operand);
     }
 
-    public OpIterator getRootOp(NodeServer node){
-        return new Filter(predicate, child.getRootOp(node));
+    public OpIterator getRootOp(){
+        return new Filter(predicate, child.getRootOp());
     }
-    
+
     @Override
     public String toString() {
-        return getRootOp(null).toString();
+        return String.format("FILTER(%s , %d %s %s)", child.toString(), predicate.getField(), predicate.getOp().toString(),
+                predicate.getOperand().toString());
     }
     
     @Override

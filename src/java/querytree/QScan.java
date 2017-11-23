@@ -6,15 +6,17 @@ import networking.NodeServer;
 import simpledb.*;
 
 class QScan implements QueryTree {
+    private final NodeServer node;
     private final String tableName;
     private final String tableAlias;
 
-    QScan(String name, String alias) {
+    QScan(NodeServer node, String name, String alias) {
+        this.node = node;
         this.tableName = name;
         this.tableAlias = alias;
     }
 
-    public OpIterator getRootOp(NodeServer node){
+    public OpIterator getRootOp(){
         return new SeqScan(Global.TRANSACTION_ID, node.getTableId(tableName), this.tableAlias);
     }
 

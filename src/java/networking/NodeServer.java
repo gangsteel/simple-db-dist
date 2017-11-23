@@ -88,7 +88,7 @@ public class NodeServer {
                     break; // A way to debug individual server
                 }
                 try {
-                    QueryTree qt = QueryParser.parse(line);
+                    QueryTree qt = QueryParser.parse(this, line);
                     processQuery(qt, out);
                     // Some trash for now. TODO: run the query and return the results
                 } catch (UnableToParseException e) {
@@ -104,7 +104,7 @@ public class NodeServer {
     }
 
     private void processQuery(QueryTree queryTree, PrintWriter outputStream){
-        OpIterator op = queryTree.getRootOp(this);
+        OpIterator op = queryTree.getRootOp();
         try {
             op.open();
         } catch (DbException e) {

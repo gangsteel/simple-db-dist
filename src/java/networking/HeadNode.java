@@ -57,7 +57,7 @@ public class HeadNode {
                 // TODO: Some help messages
             } else {
                 try {
-                    QueryTree qt = QueryParser.parse(input);
+                    QueryTree qt = QueryParser.parse(null, input); // null Node does not affect the string
                     processQuery(qt);
                 } catch (UnableToParseException e) {
                     System.out.println("Wrong syntax. Type 'help' for help.");
