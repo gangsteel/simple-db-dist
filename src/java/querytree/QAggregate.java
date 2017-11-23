@@ -38,7 +38,12 @@ class QAggregate implements QueryTree {
     public OpIterator getRootOp() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
-    
+
+    @Override
+    public void setIsGlobal(boolean isGlobal) {
+        child.setIsGlobal(isGlobal);
+    }
+
     @Override
     public String toString() {
         return "AGGREGATE(" + child + "," + colNum + "," + aggregator + ")";

@@ -5,8 +5,8 @@ package networking;
  */
 public class Machine {
 
-    private final String ipAddress;
-    private final int port;
+    public final String ipAddress;
+    public final int port;
 
     public Machine(String ipAddress, int port) {
         this.ipAddress = ipAddress;

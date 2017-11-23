@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import edu.mit.eecs.parserlib.UnableToParseException;
 
@@ -78,7 +79,14 @@ public class HeadNode {
         for (int i = 0; i < childrenIps.size(); i++){
             final String ip = childrenIps.get(i);
             final int port = childrenPorts.get(i);
-            Thread t = new Thread(new ChildConnection(ip, port, queryTree));
+            Thread t = new Thread(new NodeRequestWorker(ip, port, queryTree, new Function<String, Void>() {
+                @Override
+                public Void apply(String s) {
+                    System.out.println(s);
+                    result.merge(s);
+                    return null;
+                }
+            }));
             t.start();
             workers.add(t);
         }
@@ -90,40 +98,6 @@ public class HeadNode {
             }
         });
         return this.result;
-    }
-
-
-
-    private class ChildConnection implements Runnable {
-        private final String childIp;
-        private final int childPort;
-        private final QueryTree queryTree;
-        
-        public ChildConnection(String childIp, int childPort, QueryTree queryTree){
-            this.childIp = childIp;
-            this.childPort = childPort;
-            this.queryTree = queryTree;
-        }
-        
-        @Override
-        public void run() {
-            try {
-                Socket s = new Socket(childIp, childPort);
-                // TODO: Maybe some timeout here
-                BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-                PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-                out.println(queryTree.toString());
-
-                for (String line = in.readLine(); !line.equals("END"); line = in.readLine()) {
-                    // TODO: synchronized control
-                    System.out.println(line); // TODO: we need NOT directly output for aggregate operations
-                    result.merge(line);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-                // TODO: Some error handling
-            }
-        }
     }
 
     /**

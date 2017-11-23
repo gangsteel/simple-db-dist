@@ -59,6 +59,10 @@ public class NodeServer {
         references.add(machine);
     }
 
+    public List<Machine> getReferences() {
+        return new ArrayList<>(references);
+    }
+
     public int getPort() {
         return port;
     }
@@ -96,7 +100,7 @@ public class NodeServer {
                 }
             }
         } finally {
-            System.out.println("Client from " + socket.getInetAddress().toString() + ":"
+            LOGGER.log(Level.INFO, "Client from " + socket.getInetAddress().toString() + ":"
                     + socket.getPort() + " is leaving.");
             out.close();
             in.close();

@@ -1,5 +1,6 @@
 package querytree;
 
+import distributeddb.GlobalSeqScan;
 import global.Global;
 import main.SingleMachineTest;
 import networking.NodeServer;
@@ -9,6 +10,7 @@ class QScan implements QueryTree {
     private final NodeServer node;
     private final String tableName;
     private final String tableAlias;
+    private boolean isGlobal;
 
     QScan(NodeServer node, String name, String alias) {
         this.node = node;
@@ -17,8 +19,19 @@ class QScan implements QueryTree {
     }
 
     public OpIterator getRootOp(){
-        return new SeqScan(Global.TRANSACTION_ID, node.getTableId(tableName), this.tableAlias);
+        if (!isGlobal) {
+            return new SeqScan(Global.TRANSACTION_ID, node.getTableId(tableName), this.tableAlias);
+        }
+        else {
+            return new GlobalSeqScan(Global.TRANSACTION_ID, node, tableName, tableAlias);
+        }
     }
+
+    @Override
+    public void setIsGlobal(boolean isGlobal) {
+        this.isGlobal = isGlobal;
+    }
+
 
     @Override
     public String toString() {

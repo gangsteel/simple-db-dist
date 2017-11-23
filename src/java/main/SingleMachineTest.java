@@ -22,7 +22,7 @@ public class SingleMachineTest {
     private static final Logger LOGGER = Logger.getLogger(SingleMachineTest.class.getName());
 
     public static void main(String[] args) throws IOException, DbException, TransactionAbortedException {
-        List<String> tableNames = Arrays.asList("table1", "table2");
+        List<String> tableNames = Arrays.asList("table1", "table2", "table3", "table4");
         List<Integer> ports = Arrays.asList(8000, 8001, 8002);
 
         // Set up the Nodes
@@ -33,7 +33,8 @@ public class SingleMachineTest {
             NodeServer node = new NodeServer(port);
 
             // Create partitioned tables
-            for (String tableName : tableNames) {
+            for (int i = 0; i < 2; i++) {
+                String tableName = tableNames.get(i);
                 HeapFile tablePart = Utility.createEmptyTempHeapFile(3);
                 node.addTable(tablePart, tableName);
                 Tuple t = new Tuple(tablePart.getTupleDesc());
@@ -44,6 +45,21 @@ public class SingleMachineTest {
                 t2.setField(0, new IntField(port+3));
                 t2.setField(1, new IntField(port+4));
                 t2.setField(2, new IntField(port+5));
+                Database.getBufferPool().insertTuple(Global.TRANSACTION_ID, tablePart.getId(), t);
+                Database.getBufferPool().insertTuple(Global.TRANSACTION_ID, tablePart.getId(), t2);
+            }
+            for (int i = 2; i < 4; i++) {
+                String tableName = tableNames.get(i);
+                HeapFile tablePart = Utility.createEmptyTempHeapFile(3);
+                node.addTable(tablePart, tableName);
+                Tuple t = new Tuple(tablePart.getTupleDesc());
+                t.setField(0, new IntField(port-8000));
+                t.setField(1, new IntField(port-8000+1));
+                t.setField(2, new IntField(port-8000+2));
+                Tuple t2 = new Tuple(tablePart.getTupleDesc());
+                t2.setField(0, new IntField(port-8000+3));
+                t2.setField(1, new IntField(port-8000+4));
+                t2.setField(2, new IntField(port-8000+5));
                 Database.getBufferPool().insertTuple(Global.TRANSACTION_ID, tablePart.getId(), t);
                 Database.getBufferPool().insertTuple(Global.TRANSACTION_ID, tablePart.getId(), t2);
             }
@@ -81,9 +97,32 @@ public class SingleMachineTest {
         // does not correspond to any NodeServer. Since the toString() method does not depend on a NodeServer, and all
         // HeadNode does is relay this String to other NodeServers, this works.
         LOGGER.log(Level.INFO, "Handling query...");
-        String tableName = "table1";
-        QueryTree query = QueryTree.filter(QueryTree.scan(null, tableName, tableName), 1, Predicate.Op.EQUALS, new IntField(8001));
+        String tableName1 = "table1";
+        String tableName2 = "table2";
+        String tableName3 = "table3";
+        String tableName4 = "table4";
+        QueryTree leftJoin = QueryTree.join(QueryTree.scan(null, tableName1, tableName1), QueryTree.scan(null, tableName2, tableName2),
+                0, Predicate.Op.EQUALS, 2);
+        QueryTree rightJoin = QueryTree.join(QueryTree.scan(null, tableName3, tableName3), QueryTree.scan(null, tableName4, tableName4),
+                2, Predicate.Op.LESS_THAN, 0);
+        QueryTree query = QueryTree.join(leftJoin, rightJoin, 0, Predicate.Op.GREATER_THAN, 0);
         headNode.processQuery(query);
+
+        // Left Join should output:
+        // 8002 8003 8004 8000 8001 8002
+        // 8003 8004 8005 8001 8002 8003
+        // 8004 8005 8006 8002 8003 8004
+        // 8005 8006 8007 8003 8004 8005
+
+        // Right Join should output:
+        // 0 1 2 3 4 5
+        // 0 1 2 4 5 6
+        // 0 1 2 5 6 7
+        // 1 2 3 4 5 6
+        // 1 2 3 5 6 7
+        // 2 3 4 5 6 7
+
+        // Therefore there should be 24 total outputs, which there are if you count them.
 
         // Finished!
         LOGGER.log(Level.INFO, "Finished!");

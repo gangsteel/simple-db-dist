@@ -18,6 +18,11 @@ class QFilter implements QueryTree {
     }
 
     @Override
+    public void setIsGlobal(boolean isGlobal) {
+
+    }
+
+    @Override
     public String toString() {
         return String.format("FILTER(%s , %d %s %s)", child.toString(), predicate.getField(), predicate.getOp().toString(),
                 predicate.getOperand().toString());

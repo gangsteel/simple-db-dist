@@ -37,6 +37,8 @@ public interface QueryTree {
 
     public OpIterator getRootOp();
 
+    public void setIsGlobal(boolean isGlobal);
+
 
 
 

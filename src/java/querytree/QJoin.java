@@ -14,10 +14,25 @@ public class QJoin implements QueryTree {
         this.child1 = child1;
         this.child2 = child2;
         this.joinPredicate = new JoinPredicate(colNum1, op, colNum2);
+
+        // set globality of children
+        setIsGlobal(false);
     }
 
     public OpIterator getRootOp(){
         return new Join(joinPredicate, child1.getRootOp(), child2.getRootOp());
+    }
+
+    @Override
+    public void setIsGlobal(boolean isGlobal) {
+        if (isGlobal) {
+            child1.setIsGlobal(true);
+            child2.setIsGlobal(true);
+        }
+        else {
+            child1.setIsGlobal(false);
+            child2.setIsGlobal(true);
+        }
     }
 
     @Override
