@@ -1,4 +1,4 @@
-package headnode;
+package networking;
 
 import querytree.QueryTree;
 import simpledb.Tuple;

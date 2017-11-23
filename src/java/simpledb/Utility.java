@@ -123,6 +123,32 @@ public class Utility {
         return hf;
     }
 
+    public static HeapFile createEmptyHeapFile(int cols) throws IOException {
+        return createEmptyHeapFile(UUID.randomUUID().toString(), cols);
+    }
+
+    public static HeapFile createEmptyTempHeapFile(int cols) throws IOException {
+        File f = File.createTempFile(UUID.randomUUID().toString(), ".dat");
+        // touch the file
+        FileOutputStream fos = new FileOutputStream(f);
+        fos.write(new byte[0]);
+        fos.close();
+
+        HeapFile hf = openHeapFile(cols, f);
+        HeapPageId pid = new HeapPageId(hf.getId(), 0);
+
+        HeapPage page = null;
+        try {
+            page = new HeapPage(pid, HeapPage.createEmptyPageData());
+        } catch (IOException e) {
+            // this should never happen for an empty page; bail;
+            throw new RuntimeException("failed to create empty page in HeapFile");
+        }
+
+        hf.writePage(page);
+        return hf;
+    }
+
     /** Opens a HeapFile and adds it to the catalog.
      *
      * @param cols number of columns in the table.

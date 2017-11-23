@@ -1,7 +1,8 @@
 package simpledb;
 import java.io.*;
 
-import headnode.HeadNode;
+import networking.HeadNode;
+import networking.NodeServer;
 
 public class SimpleDb {
     public static void main (String args[])

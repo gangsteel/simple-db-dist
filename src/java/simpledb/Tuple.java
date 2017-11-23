@@ -89,7 +89,7 @@ public class Tuple implements Serializable {
     public String toString() {
         String finalString = "";
         for (Field f : fields) {
-            finalString += f.toString() + " ";
+            finalString += f + " ";
         }
         return finalString.substring(0, finalString.length()-1);
     }

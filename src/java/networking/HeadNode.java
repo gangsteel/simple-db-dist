@@ -1,5 +1,6 @@
-package headnode;
+package networking;
 
+import global.Global;
 import querytree.QueryParser;
 import querytree.QueryTree;
 
@@ -21,8 +22,6 @@ import edu.mit.eecs.parserlib.UnableToParseException;
  */
 public class HeadNode {
     
-    private static final String LOCALHOST = "127.0.0.1";
-
     private final List<String> childrenIps = new ArrayList<>();
     private final List<Integer> childrenPorts = new ArrayList<>();
     private Result result;
@@ -67,14 +66,29 @@ public class HeadNode {
         }
     }
 
+    /**
+     * Handles the given query. This will relay the request to all nodes and collect their responses. This method waits
+     * for all nodes to finish their response before terminating.
+     * @param queryTree query
+     * @return
+     */
     public Result processQuery(QueryTree queryTree){
         this.result = new Result(queryTree);
+        List<Thread> workers = new ArrayList<>();
         for (int i = 0; i < childrenIps.size(); i++){
             final String ip = childrenIps.get(i);
             final int port = childrenPorts.get(i);
             Thread t = new Thread(new ChildConnection(ip, port, queryTree));
             t.start();
+            workers.add(t);
         }
+        workers.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
         return this.result;
     }
 
@@ -94,17 +108,17 @@ public class HeadNode {
         @Override
         public void run() {
             try {
-            Socket s = new Socket(childIp, childPort);
-            // TODO: Maybe some timeout here
-            BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-            out.println(queryTree.toString());
-            
-            for (String line = in.readLine(); !line.equals("END"); line = in.readLine()) {
-                // TODO: synchronized control
-                System.out.println(line);
-                result.merge(line);
-            }
+                Socket s = new Socket(childIp, childPort);
+                // TODO: Maybe some timeout here
+                BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+                out.println(queryTree.toString());
+
+                for (String line = in.readLine(); !line.equals("END"); line = in.readLine()) {
+                    // TODO: synchronized control
+                    System.out.println(line); // TODO: we need NOT directly output for aggregate operations
+                    result.merge(line);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
                 // TODO: Some error handling
@@ -119,7 +133,7 @@ public class HeadNode {
     public static void main(String[] args) {
         // TODO: command line arguments for children ips/ports parse format: #.#.#.#:# using regex
         HeadNode head = new HeadNode();
-        head.addChildNode(LOCALHOST, 4444); //TODO: Just for test purpose
+        head.addChildNode(Global.LOCALHOST, 4444); //TODO: Just for test purpose
         try {
             head.getInput();
         } catch (IOException e) {

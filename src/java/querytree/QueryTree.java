@@ -1,8 +1,7 @@
 package querytree;
 
-import simpledb.OpIterator;
-import simpledb.Predicate;
-import simpledb.TupleDesc;
+import networking.NodeServer;
+import simpledb.*;
 
 /**
  * Abstract recursive data type representing a query tree structure
@@ -19,11 +18,12 @@ public interface QueryTree {
      */
     
     // TODO: static factory methods
-    public static QueryTree scan(String alias, int tableid) {
-        return new QScan(alias, tableid);
+    public static QueryTree scan(String name, String alias) {
+        // TODO: Alias must be the same as name? It seems that eventually, we pass in the alias to the other nodes.
+        return new QScan(name, alias);
     }
     
-    public static QueryTree filter(QueryTree child, int colNum, Predicate pred, int operand) {
+    public static QueryTree filter(QueryTree child, int colNum, Predicate.Op pred, Field operand) {
         return new QFilter(child, colNum, pred, operand);
     }
     
@@ -31,7 +31,7 @@ public interface QueryTree {
         return new QAggregate(child, colNum, aggregator);
     }
 
-    public OpIterator getRootOp();
+    public OpIterator getRootOp(NodeServer node);
 
 
 

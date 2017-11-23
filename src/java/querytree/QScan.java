@@ -1,32 +1,26 @@
 package querytree;
 
-import simpledb.OpIterator;
-import simpledb.SeqScan;
-import simpledb.TransactionId;
+import global.Global;
+import main.SingleMachineTest;
+import networking.NodeServer;
+import simpledb.*;
 
 class QScan implements QueryTree {
-    
-    private final int tableid;
+    private final String tableName;
     private final String tableAlias;
 
-    QScan(String alias, int id) {
-        this.tableid = id;
+    QScan(String name, String alias) {
+        this.tableName = name;
         this.tableAlias = alias;
     }
 
-    public int getTableId(){
-        return 0;
+    public OpIterator getRootOp(NodeServer node){
+        return new SeqScan(Global.TRANSACTION_ID, node.getTableId(tableName), this.tableAlias);
     }
-
-
-    public OpIterator getRootOp(){
-        return new SeqScan(new TransactionId(), this.tableid, this.tableAlias);
-    }
-
 
     @Override
     public String toString() {
-        return "SCAN(" + tableid + ")";
+        return "SCAN(" + tableAlias + ")";
     }
     
     @Override

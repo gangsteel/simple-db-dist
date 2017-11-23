@@ -1,5 +1,8 @@
 package querytree;
 
+import networking.NodeServer;
+import simpledb.OpIterator;
+
 class QAggregate implements QueryTree {
     
     public enum Agg {
@@ -29,6 +32,11 @@ class QAggregate implements QueryTree {
         this.child = child;
         this.colNum = colNum;
         this.aggregator = aggregator;
+    }
+
+    @Override
+    public OpIterator getRootOp(NodeServer node) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
     
     @Override
