@@ -98,40 +98,46 @@ public class AddRemoveTest {
         String tableName2 = "table2";
         String tableName3 = "table3";
         String tableName4 = "table4";
-        QueryTree leftJoin = QueryTree.join(QueryTree.scan(null, tableName1, tableName1), QueryTree.scan(null, tableName2, tableName2),
-                0, Predicate.Op.EQUALS, 2);
-        QueryTree rightJoin = QueryTree.join(QueryTree.scan(null, tableName3, tableName3), QueryTree.scan(null, tableName4, tableName4),
-                2, Predicate.Op.LESS_THAN, 0);
-        QueryTree query = QueryTree.join(leftJoin, rightJoin, 0, Predicate.Op.GREATER_THAN, 0);
-        headNode.processQuery(query);
+
 
         LOGGER.log(Level.INFO, "Starting removal");
         headNode.removeChildNode(Global.LOCALHOST, ports.get(0));
         nodes.remove(0);
         ports.remove(0);
-//        QueryTree scan1 = QueryTree.scan(nodes.get(0), tableName1, tableName1);
-//        LOGGER.log(Level.INFO, "Performing scan of table1");
-//        headNode.processQuery(scan1);
 
-        // Left Join should output:
-        // 8002 8003 8004 8000 8001 8002
-        // 8003 8004 8005 8001 8002 8003
-        // 8004 8005 8006 8002 8003 8004
-        // 8005 8006 8007 8003 8004 8005
+        QueryTree scan1 = QueryTree.scan(null, tableName1, tableName1);
+        LOGGER.log(Level.INFO, "Performing scan of table1");
+        headNode.processQuery(scan1);
 
-        // Right Join should output:
-        // 0 1 2 3 4 5
-        // 0 1 2 4 5 6
-        // 0 1 2 5 6 7
-        // 1 2 3 4 5 6
-        // 1 2 3 5 6 7
-        // 2 3 4 5 6 7
+        QueryTree scan2 = QueryTree.scan(null, tableName2, tableName2);
+        LOGGER.log(Level.INFO, "Performing scan of table2");
+        headNode.processQuery(scan2);
 
-        // Therefore there should be 24 total outputs, which there are if you count them.
+        QueryTree scan3 = QueryTree.scan(null, tableName3, tableName3);
+        LOGGER.log(Level.INFO, "Performing scan of table3");
+        headNode.processQuery(scan3);
 
-        // Finished!
-//        LOGGER.log(Level.INFO, "Finished!");
-//        System.exit(1);
+        QueryTree scan4 = QueryTree.scan(null, tableName4, tableName4);
+        LOGGER.log(Level.INFO, "Performing scan of table4");
+        headNode.processQuery(scan4);
+
+        // each set of tuples below should appear twice overall
+        // 0 1 2
+        // 1 2 3
+        // 2 3 4
+        // 3 4 5
+        // 4 5 6
+        // 5 6 7
+        // 8000 8001 8002
+        // 8001 8002 8003
+        // 8002 8003 8004
+        // 8003 8004 8005
+        // 8004 8005 8006
+        // 8005 8006 8007
+
+
+        LOGGER.log(Level.INFO, "Finished!");
+        System.exit(1);
 
     }
 }
