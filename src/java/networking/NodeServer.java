@@ -8,6 +8,8 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.sun.deploy.util.StringUtils;
 import distributeddb.GlobalSeqScan;
@@ -52,7 +54,9 @@ public class NodeServer {
     }
 
     public int getTableId(String tableName) {
-        return Database.getCatalog().getTableId(getStoredTableName(tableName));
+        //return Database.getCatalog().getTableId(getStoredTableName(tableName));
+        return Database.getCatalog().getTableId(tableName);
+        // Changed by Gang Wang, 10:30PM
     }
 
     private String getStoredTableName(String tableName) {
@@ -67,6 +71,26 @@ public class NodeServer {
 
     public void addReference(Machine machine) {
         references.add(machine);
+    }
+    
+    /**
+     * Add all machines by a String with format of ip:port;ip:port;...;ip:port
+     * @param machines the String representing all the references
+     */
+    private void addAllReferences(String machines) {
+        if (machines.equals("")) {
+            return;
+        }
+        final String[] machineArray = machines.split(";");
+        for (String machine : machineArray) {
+            final Matcher matcher = Pattern.compile(Global.IP_PORT_REGEX).matcher(machine);
+            if (!matcher.matches()) {
+                throw new RuntimeException("Wrong format of IP and port: #.#.#.#:#");
+            }
+            final Machine m = new Machine(matcher.group(1), Integer.parseInt(matcher.group(2)));
+            addReference(m);
+            LOGGER.log(Level.INFO, "Fellow child node " + m + " added.");
+        }
     }
 
     public void removeReference(Machine machine){
@@ -106,6 +130,9 @@ public class NodeServer {
                 LOGGER.log(Level.INFO, "line received " + line);
                 if (line.equals("exit")) {
                     break; // A way to debug individual server
+                } else if (line.startsWith("machines:")) {
+                    addAllReferences(line.replaceFirst("machines:",""));
+                    break;
                 }
                 if (line.startsWith("WRITE")){
                     LOGGER.log(Level.INFO, "got to write");
@@ -262,10 +289,10 @@ public class NodeServer {
     }
     
     public static void main(String[] args) {
-        // TODO: Make the main to accept a port number?
-        final int port = 4444;
+        final int port = Integer.parseInt(args[0]);
         try {
             NodeServer server = new NodeServer(port);
+            Database.getCatalog().loadSchema("config/child/" + port + "/catalog.txt");
             server.startListen();
         } catch (IOException e) {
             throw new RuntimeException(e);

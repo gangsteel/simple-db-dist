@@ -94,10 +94,12 @@ public class SimpleDb {
 
         }
         else if (args[0].equals("serve")) {
-            NodeServer.main(new String[1]); //TODO some port number here
+            NodeServer.main(new String[]{args[1]}); // Format: serve PORTNUMBER
+            // Configuration files should be in config/child/PORTNUMBER directory
         }
         else if (args[0].equals("client")) {
-            HeadNode.main(new String[1]); // TODO many many input should be parsed here or there
+            HeadNode.main(new String[]{args[1]}); // Format: client FILENAME
+            // FILENAME can be local.txt for local benchmarking
         }
         else {
             System.err.println("Unknown command: " + args[0]);

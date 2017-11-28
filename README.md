@@ -2,22 +2,9 @@
 Distributed SimpleDb
 
 Now the NodeServer is able to accept incoming connections.
-(of course, query processing is not implemented yet, and some garbage is returned instead)
 
-To test it on your own computer, find NodeServer class under simpledb package,
-run it as an application (the main function) in Eclipse or whatever.
+To test it on your own computer, use ant to build the package and run "java -jar dist/simpledb.jar serve PORTNUMBER" to start the server. Now, configuration files are available for port number 8001 and 8002. Use two terminal windows to start two servers simulating distributed database system.
 
-(Or use ant to build the package and run "java -jar dist/simpledb.jar serve" more arguments
-need to be added)
-
-Now you can login the server using telnet from your own computer:
-
-telnet localhost 4444
-
-"4444" is the temporary port number we are using now
-
-And you can type query in the format described in querytree/Query.g
-
-If your query is not parsed, an error message will be returned.
+On another terminal, run "java -jar dist/simpledb.jar client local.txt" to run the head node. You can now type queries to get results.
 
 Type "exit" to close the connection.
