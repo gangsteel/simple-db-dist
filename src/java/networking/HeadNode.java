@@ -12,8 +12,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.mit.eecs.parserlib.UnableToParseException;
+
+import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
 
 /**
  * The class running on the head node, accepting user command (CLI),
@@ -26,6 +30,7 @@ public class HeadNode {
     private final List<String> childrenIps = new ArrayList<>();
     private final List<Integer> childrenPorts = new ArrayList<>();
     private Result result;
+    private static final Logger LOGGER = Logger.getLogger(HeadNode.class.getName());
 
     public HeadNode(){
         this.result = null;
@@ -40,6 +45,15 @@ public class HeadNode {
         // TODO: check format of the child IP
         childrenIps.add(childIp);
         childrenPorts.add(childPort);
+    }
+
+    public void removeChildNode(String childIp, int childPort){
+        for(int i=0; i< childrenPorts.size(); i++){
+            Thread t = new Thread(new DeleteNodeRequest(childrenIps.get(i), childrenPorts.get(i), childIp, childPort));
+            t.start();
+        }
+        childrenIps.remove(childIp);
+        childrenPorts.remove(new Integer(childPort));
     }
 
     /**

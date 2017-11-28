@@ -1,17 +1,23 @@
 package networking;
 
+import java.awt.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.deploy.util.StringUtils;
+import distributeddb.GlobalSeqScan;
 import edu.mit.eecs.parserlib.UnableToParseException;
+import global.Global;
+import global.Utils;
 import querytree.QueryParser;
 import querytree.QueryTree;
 import simpledb.*;
+import sun.rmi.runtime.Log;
 
 /**
  * Server class interact with the including database of the node and
@@ -42,7 +48,7 @@ public class NodeServer {
     }
 
     public String getTableName(int tableId) {
-        return getStoredTableName(Database.getCatalog().getTableName(tableId));
+        return Database.getCatalog().getTableName(tableId);
     }
 
     public int getTableId(String tableName) {
@@ -53,10 +59,18 @@ public class NodeServer {
         return id + "." + tableName;
     }
 
+    private String getBaseTableName(String fullTableName){
+        return fullTableName.replaceFirst("^" + this.id + ".", "");
+    }
+
     /** End Catalog-like Method **/
 
     public void addReference(Machine machine) {
         references.add(machine);
+    }
+
+    public void removeReference(Machine machine){
+        references.remove(machine);
     }
 
     public List<Machine> getReferences() {
@@ -80,24 +94,63 @@ public class NodeServer {
      * @param socket the socket connecting between this node and the client
      * @throws IOException if the connection encounters an error
      */
-    private void handleConnection(Socket socket) throws IOException {
+    private void handleConnection(Socket socket) throws IOException,DbException, TransactionAbortedException {
         LOGGER.log(Level.INFO, "Client from " + socket.getInetAddress().toString() + ":"
                 + socket.getPort() + " is connected. Local port: " + socket.getLocalPort() + ".");
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true); // TODO: should we autoFlush?
+        LOGGER.log(Level.INFO, "created streams");
 
         try {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
+                LOGGER.log(Level.INFO, "line received " + line);
                 if (line.equals("exit")) {
                     break; // A way to debug individual server
                 }
-                try {
-                    QueryTree qt = QueryParser.parse(this, line);
-                    processQuery(qt, out);
-                    // Some trash for now. TODO: run the query and return the results
-                } catch (UnableToParseException e) {
-                    out.println("Unable to parse your command!"); // TODO: More information
+                if (line.startsWith("WRITE")){
+                    LOGGER.log(Level.INFO, "got to write");
+                    String[] reqArr = line.split(" ");
+                    String tableName= reqArr[reqArr.length-1];
+                    String tupleStr = "";
+                    boolean inTuple = false;
+                    for(String s: reqArr){
+                        if (s.equals("TABLE")){
+                            inTuple = false;
+                        }
+                        if (inTuple){
+                            tupleStr += " " + s;
+                        }
+                        if (s.equals("TUPLE")){
+                            inTuple = true;
+                        }
+                    }
+                    LOGGER.log(Level.INFO, "tuple string " + tupleStr);
+                    tupleStr = tupleStr.trim();
+                    TupleDesc td = Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(this.getStoredTableName(tableName)));
+                    Tuple tup = Utils.stringToTuple(td, tupleStr);
+                    int tableId = Database.getCatalog().getTableId(this.getStoredTableName(tableName));
+                    Database.getBufferPool().insertTuple(Global.TRANSACTION_ID, tableId, tup);
                 }
+                else if (line.startsWith("DELETE NODE")){
+                    String[] reqArr = line.split(" ");
+                    String ip = reqArr[2];
+                    String port = reqArr[3];
+                    this.removeReference(new Machine(ip, Integer.parseInt(port)));
+                    if (this.id.equals(port)){
+                        LOGGER.log(Level.INFO, "port num " + this.id);
+                        this.terminate();
+                    }
+                }
+                else {
+                    try{
+                        QueryTree qt = QueryParser.parse(this, line);
+                        processQuery(qt, out);
+                    }catch (UnableToParseException e) {
+                            out.println("Unable to parse your command!"); // TODO: More information
+                    }
+                }
+                out.println("DONE");
+
             }
         } finally {
             LOGGER.log(Level.INFO, "Client from " + socket.getInetAddress().toString() + ":"
@@ -105,6 +158,78 @@ public class NodeServer {
             out.close();
             in.close();
         }
+    }
+
+    private void insert(){
+
+
+    }
+
+    private void terminate() throws DbException, TransactionAbortedException{
+        int numServers = this.references.size();
+        List<Machine> sortedMachines = new ArrayList<>(this.references);
+        Iterator<Integer> tableIdIterator = Database.getCatalog().tableIdIterator();
+        Collections.sort(sortedMachines, new Comparator<Machine>(){
+            @Override
+            public int compare(Machine o1, Machine o2) {
+                return (o1.port > o2.port) ? 1 : (o1.port < o2.port) ? -1 : 0;
+            }
+        });
+
+        while(tableIdIterator.hasNext()){
+            int tableId = tableIdIterator.next();
+            String tableName = this.getTableName(tableId);
+            LOGGER.log(Level.INFO, tableName);
+
+            if (tableName.startsWith(this.id)){
+                //TODO: idk what to use for alias. I just used name. Probs ok.
+                String baseTableName = this.getBaseTableName(tableName);
+
+                LOGGER.log(Level.INFO, baseTableName);
+//                OpIterator scan = new GlobalSeqScan(Global.TRANSACTION_ID, this, baseTableName, baseTableName);
+                OpIterator scan = new SeqScan(Global.TRANSACTION_ID, tableId, baseTableName);
+                scan.open();
+                LOGGER.log(Level.INFO, "got past open");
+                while(scan.hasNext()){
+                    LOGGER.log(Level.INFO, "inside scan");
+                    Tuple t = scan.next();
+                    //TODO: do we want to hash on some particular attribute. Can maintain a map indicating which attribute we're hashing on
+                    Machine destinaton = sortedMachines.get(t.hashCode()%(numServers-1));
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Socket s = new Socket(destinaton.ipAddress, destinaton.port);
+                                BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                                PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+                                LOGGER.log(Level.INFO, t.toString());
+                                out.println("WRITE " + "TUPLE " + t.toString() + " TABLE " + baseTableName);
+                                out.println("DONE");
+                                for (String line = in.readLine(); !line.equals("DONE"); in.readLine()) {
+                                    //TODO: do something here probably
+                                    System.out.println(line);
+                                    LOGGER.log(Level.INFO, line);
+                                }
+                                in.close();
+                                out.close();
+                                s.close();
+                            }
+                            catch(IOException e){
+                                //TODO:handle error
+                                e.printStackTrace();
+                            }
+
+                        }
+                    });
+                    thread.start();
+
+                }
+            }
+        }
+
+
+
+
     }
 
     private void processQuery(QueryTree queryTree, PrintWriter outputStream){
@@ -124,12 +249,12 @@ public class NodeServer {
             outputStream.println("END");
         }
         catch(DbException e){
-            System.out.println("There was an error processing query");
+            LOGGER.log(Level.INFO, "There was an error processing query");
             e.printStackTrace();
             //TODO: do error handling
         }
         catch(TransactionAbortedException e){
-            System.out.println("Transaction aborted while processing query");
+            LOGGER.log(Level.INFO, "Transaction aborted while processing query");
             e.printStackTrace();
             //TODO: do error handling
 
@@ -166,6 +291,15 @@ public class NodeServer {
                                 }
                             } catch (IOException ioe) {
                                 ioe.printStackTrace(); // but do not stop serving
+                                LOGGER.log(Level.INFO, "error io exception");
+                            }
+                            catch(DbException e){
+                                e.printStackTrace();
+                                LOGGER.log(Level.INFO, "error dbexception");
+                            }
+                            catch(TransactionAbortedException e){
+                                e.printStackTrace();
+                                LOGGER.log(Level.INFO, "error trans aborted exception");
                             }
                         }
                     });

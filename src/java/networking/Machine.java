@@ -8,10 +8,11 @@ public class Machine {
     public final String ipAddress;
     public final int port;
 
-    public Machine(String ipAddress, int port) {
+    public Machine(String ipAddress, int port){
         this.ipAddress = ipAddress;
         this.port = port;
     }
+
 
     @Override
     public boolean equals(Object o) {

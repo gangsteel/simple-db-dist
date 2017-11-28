@@ -2,6 +2,9 @@ package global;
 
 import simpledb.TransactionId;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Class holding global fields.
  */
