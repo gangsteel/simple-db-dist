@@ -5,6 +5,9 @@ import querytree.QueryParser;
 import querytree.QueryTree;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -12,6 +15,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.mit.eecs.parserlib.UnableToParseException;
 
@@ -102,12 +107,27 @@ public class HeadNode {
 
     /**
      * The main function to start head node and accepting client's requests
-     * @param args TODO
+     * @param args String array with length of 1, representing the file name for
+     * head node configuration. The file should be located in config/head directory
      */
     public static void main(String[] args) {
-        // TODO: command line arguments for children ips/ports parse format: #.#.#.#:# using regex
+        final String fileName = "config/head/" + args[0];
         HeadNode head = new HeadNode();
-        head.addChildNode(Global.LOCALHOST, 4444); //TODO: Just for test purpose
+        try ( final BufferedReader fileReader = new BufferedReader(new FileReader(new File(fileName))) ) {
+            String line;
+            while ( (line = fileReader.readLine()) != null ) {
+                final Matcher matcher = Pattern.compile("(\\d+\\.\\d+\\.\\d+\\.\\d+):(\\d+)").matcher(line);
+                if (!matcher.matches()) {
+                    throw new RuntimeException("Wrong format of IP and port: #.#.#.#:#");
+                }
+                // System.out.println(matcher.group(1)); System.out.println(matcher.group(2));
+                head.addChildNode(matcher.group(1), Integer.parseInt(matcher.group(2)));
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("File not found in config/head directory!");
+        } catch (IOException e) {
+            throw new RuntimeException("IO error during reading the file");
+        }
         try {
             head.getInput();
         } catch (IOException e) {

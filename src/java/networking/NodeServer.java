@@ -46,7 +46,9 @@ public class NodeServer {
     }
 
     public int getTableId(String tableName) {
-        return Database.getCatalog().getTableId(getStoredTableName(tableName));
+        //return Database.getCatalog().getTableId(getStoredTableName(tableName));
+        return Database.getCatalog().getTableId(tableName);
+        // Changed by Gang Wang, 10:30PM
     }
 
     private String getStoredTableName(String tableName) {
@@ -137,10 +139,10 @@ public class NodeServer {
     }
     
     public static void main(String[] args) {
-        // TODO: Make the main to accept a port number?
-        final int port = 4444;
+        final int port = Integer.parseInt(args[0]);
         try {
             NodeServer server = new NodeServer(port);
+            Database.getCatalog().loadSchema("config/child/" + port + "/catalog.txt");
             server.startListen();
         } catch (IOException e) {
             throw new RuntimeException(e);

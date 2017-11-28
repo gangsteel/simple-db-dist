@@ -1,0 +1,5 @@
+This is the directory storing all the configuration files for the distributed database system:
+catalog.txt    catalog file storing the table information
+child    configuration files for the child nodes
+head    configuration file for the head node
+temp    temp files for testing
