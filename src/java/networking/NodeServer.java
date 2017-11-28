@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.mit.eecs.parserlib.UnableToParseException;
+import global.Global;
 import querytree.QueryParser;
 import querytree.QueryTree;
 import simpledb.*;
@@ -60,6 +63,26 @@ public class NodeServer {
     public void addReference(Machine machine) {
         references.add(machine);
     }
+    
+    /**
+     * Add all machines by a String with format of ip:port;ip:port;...;ip:port
+     * @param machines the String representing all the references
+     */
+    private void addAllReferences(String machines) {
+        if (machines.equals("")) {
+            return;
+        }
+        final String[] machineArray = machines.split(";");
+        for (String machine : machineArray) {
+            final Matcher matcher = Pattern.compile(Global.IP_PORT_REGEX).matcher(machine);
+            if (!matcher.matches()) {
+                throw new RuntimeException("Wrong format of IP and port: #.#.#.#:#");
+            }
+            final Machine m = new Machine(matcher.group(1), Integer.parseInt(matcher.group(2)));
+            addReference(m);
+            LOGGER.log(Level.INFO, "Fellow child node " + m + " added.");
+        }
+    }
 
     public List<Machine> getReferences() {
         return new ArrayList<>(references);
@@ -92,6 +115,9 @@ public class NodeServer {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 if (line.equals("exit")) {
                     break; // A way to debug individual server
+                } else if (line.startsWith("machines:")) {
+                    addAllReferences(line.replaceFirst("machines:",""));
+                    break;
                 }
                 try {
                     QueryTree qt = QueryParser.parse(this, line);

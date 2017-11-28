@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -42,9 +43,52 @@ public class HeadNode {
      * @param childPort the port of the child node
      */
     public void addChildNode(String childIp, int childPort) {
-        // TODO: check format of the child IP
         childrenIps.add(childIp);
         childrenPorts.add(childPort);
+    }
+    
+    /**
+     * Broadcast the existence of all the children to all the children
+     */
+    public void broadcastChilds() {
+        final List<Thread> workers = new ArrayList<>();
+        for (int i = 0; i < childrenIps.size(); i++){
+            final String ip = childrenIps.get(i);
+            final int port = childrenPorts.get(i);
+            
+            final int currentIndex = i; // To mute java error
+            
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Socket s;
+                    try {
+                        s = new Socket(ip, port);
+                        PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+                        String message = "machines:";
+                        for (int j = 0; j < childrenIps.size(); j++) {
+                            if (j != currentIndex) {
+                                message = message + childrenIps.get(j) + ":" + childrenPorts.get(j) + ";";
+                            }
+                        }
+                        out.println(message);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    
+                }
+            });
+            
+            t.start();
+            workers.add(t);
+        }
+        workers.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     /**
@@ -116,7 +160,7 @@ public class HeadNode {
         try ( final BufferedReader fileReader = new BufferedReader(new FileReader(new File(fileName))) ) {
             String line;
             while ( (line = fileReader.readLine()) != null ) {
-                final Matcher matcher = Pattern.compile("(\\d+\\.\\d+\\.\\d+\\.\\d+):(\\d+)").matcher(line);
+                final Matcher matcher = Pattern.compile(Global.IP_PORT_REGEX).matcher(line);
                 if (!matcher.matches()) {
                     throw new RuntimeException("Wrong format of IP and port: #.#.#.#:#");
                 }
@@ -129,6 +173,7 @@ public class HeadNode {
             throw new RuntimeException("IO error during reading the file");
         }
         try {
+            head.broadcastChilds();
             head.getInput();
         } catch (IOException e) {
             throw new RuntimeException(e);

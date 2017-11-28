@@ -12,5 +12,7 @@ public class Global {
 
     // IP Address for localhost
     public static final String LOCALHOST = "127.0.0.1";
+    
+    public static final String IP_PORT_REGEX = "(\\d+\\.\\d+\\.\\d+\\.\\d+):(\\d+)";
 
 }
