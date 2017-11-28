@@ -123,6 +123,7 @@ public class HeadNode {
      * @return
      */
     public Result processQuery(QueryTree queryTree){
+        final long startTime = System.nanoTime();
         this.result = new Result(queryTree);
         List<Thread> workers = new ArrayList<>();
         for (int i = 0; i < childrenIps.size(); i++){
@@ -146,6 +147,9 @@ public class HeadNode {
                 e.printStackTrace();
             }
         });
+        final long endTime = System.nanoTime();
+        final long duration = endTime - startTime;
+        System.out.println("Query time: " + (double)duration / 1000000.0 + "ms.");
         return this.result;
     }
 
