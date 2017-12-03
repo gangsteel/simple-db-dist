@@ -1,12 +1,19 @@
 #!/bin/bash
 
 NODE_NUMBER=$1
+if [[ $# -eq 0 ]]
+    then
+        echo "Please specify the number of child nodes!!!"
+        exit -1
+fi
 
 for i in $(seq 1 $NODE_NUMBER)
 do
-    java -jar dist/simpledb.jar serve $((8000+$i)) >config/temp/serverLog.log &
-    echo "Server run on port $((8000+$i))"
+    PORT=$((8000+$i))
+    java -jar dist/simpledb.jar serve $PORT >"config/temp/server$PORT.log" 2>&1 &
+    echo "Server run on port $PORT"
 done
 
-echo "Start client..."
+echo "Start client in 5 seconds..."
+sleep 5
 java -jar dist/simpledb.jar client local.txt
