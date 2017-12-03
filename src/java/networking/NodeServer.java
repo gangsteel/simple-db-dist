@@ -29,7 +29,7 @@ public class NodeServer {
     private static final Logger LOGGER = Logger.getLogger(NodeServer.class.getName());
 
     private String id;
-    private final List<Machine> references;
+    private List<Machine> references;
     private final ServerSocket serverSocket;
     private final int port;
     
@@ -80,6 +80,7 @@ public class NodeServer {
             return;
         }
         final String[] machineArray = machines.split(";");
+        references = new ArrayList<>();
         for (String machine : machineArray) {
             final Matcher matcher = Pattern.compile(Global.IP_PORT_REGEX).matcher(machine);
             if (!matcher.matches()) {
