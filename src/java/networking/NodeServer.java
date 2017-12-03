@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sun.deploy.util.StringUtils;
 import distributeddb.GlobalSeqScan;
 import edu.mit.eecs.parserlib.UnableToParseException;
 import global.Global;
@@ -19,7 +18,6 @@ import global.Utils;
 import querytree.QueryParser;
 import querytree.QueryTree;
 import simpledb.*;
-import sun.rmi.runtime.Log;
 
 /**
  * Server class interact with the including database of the node and

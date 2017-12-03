@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 
 import edu.mit.eecs.parserlib.UnableToParseException;
 
-import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
 
 /**
  * The class running on the head node, accepting user command (CLI),
