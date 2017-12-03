@@ -1,4 +1,4 @@
 #!/bin/bash
 
 bash ./cleanup.sh
-bash ./randAndSplit.sh 501 3 10 test 100
+bash ./randAndSplitTwoTable.sh 10 3 10 test 5
