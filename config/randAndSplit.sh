@@ -33,3 +33,24 @@ do
     fi
     (( FILE_INDEX++ ))
 done
+
+# Start to distribute the dat files
+echo "SimpleDb format compilation completed, start distributing the files"
+# Prepare catalog.txt
+CATALOG_TEXT="$FILE_NAME (f1 int"
+for i in $(seq 2 $COLUMN_NUMBER)
+do
+    CATALOG_TEXT+=", f$i int"
+done 
+CATALOG_TEXT+=")"
+echo $CATALOG_TEXT > temp/catalog.txt
+> head/local.txt
+
+for INDEX in $(seq 1 $FILE_NUMBER)
+do
+    DIRECTORY_NAME="child/$((8000+$INDEX))"
+    mkdir -p $DIRECTORY_NAME
+    cp "temp/$FILE_NAME$INDEX.dat" "$DIRECTORY_NAME/$FILE_NAME.dat"
+    cp temp/catalog.txt "$DIRECTORY_NAME/"
+    echo "127.0.0.1:$((8000+$INDEX))" >> head/local.txt
+done
