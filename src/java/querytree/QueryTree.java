@@ -18,9 +18,17 @@ public interface QueryTree {
      */
     
     // TODO: static factory methods
+    /**
+     * useSimpleDb is whether or not to run the SimpleDB version without networking.
+     */
+    public static QueryTree scan(NodeServer node, String name, String alias, boolean useSimpleDb) {
+        // TODO: Alias must be the same as name? It seems that eventually, we pass in the alias to the other nodes.
+        return new QScan(node, name, alias, useSimpleDb);
+    }
+
     public static QueryTree scan(NodeServer node, String name, String alias) {
         // TODO: Alias must be the same as name? It seems that eventually, we pass in the alias to the other nodes.
-        return new QScan(node, name, alias);
+        return new QScan(node, name, alias, false);
     }
     
     public static QueryTree filter(QueryTree child, int colNum, Predicate.Op pred, Field operand) {
