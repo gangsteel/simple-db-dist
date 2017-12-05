@@ -36,7 +36,7 @@ public class SingleMachineTest {
             for (int i = 0; i < 2; i++) {
                 String tableName = tableNames.get(i);
                 HeapFile tablePart = Utility.createEmptyTempHeapFile(3);
-                node.addTable(tablePart, tableName);
+                Database.getCatalog().addTable(tablePart, tableName);
                 Tuple t = new Tuple(tablePart.getTupleDesc());
                 t.setField(0, new IntField(port));
                 t.setField(1, new IntField(port+1));
@@ -51,7 +51,7 @@ public class SingleMachineTest {
             for (int i = 2; i < 4; i++) {
                 String tableName = tableNames.get(i);
                 HeapFile tablePart = Utility.createEmptyTempHeapFile(3);
-                node.addTable(tablePart, tableName);
+                Database.getCatalog().addTable(tablePart, tableName);
                 Tuple t = new Tuple(tablePart.getTupleDesc());
                 t.setField(0, new IntField(port-8000));
                 t.setField(1, new IntField(port-8000+1));

@@ -20,7 +20,7 @@ class QScan implements QueryTree {
 
     public OpIterator getRootOp(){
         if (!isGlobal) {
-            return new SeqScan(Global.TRANSACTION_ID, node.getTableId(tableName), this.tableAlias);
+            return new SeqScan(Global.TRANSACTION_ID, Database.getCatalog().getTableId(tableName), this.tableAlias);
         }
         else {
             return new GlobalSeqScan(Global.TRANSACTION_ID, node, tableName, tableAlias);

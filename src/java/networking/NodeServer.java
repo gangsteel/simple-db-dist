@@ -43,24 +43,6 @@ public class NodeServer {
 
     /** Catalog-like Methods. We use this to reference a table associated with this Node. **/
 
-    public void addTable(DbFile table, String tableName) {
-        Database.getCatalog().addTable(table, getStoredTableName(tableName));
-    }
-
-    public String getTableName(int tableId) {
-        return Database.getCatalog().getTableName(tableId);
-    }
-
-    public int getTableId(String tableName) {
-        //return Database.getCatalog().getTableId(getStoredTableName(tableName));
-        return Database.getCatalog().getTableId(tableName);
-        // Changed by Gang Wang, 10:30PM
-    }
-
-    private String getStoredTableName(String tableName) {
-        return id + "." + tableName;
-    }
-
     private String getBaseTableName(String fullTableName){
         return fullTableName.replaceFirst("^" + this.id + ".", "");
     }
@@ -152,9 +134,9 @@ public class NodeServer {
                     }
                     LOGGER.log(Level.INFO, "tuple string " + tupleStr);
                     tupleStr = tupleStr.trim();
-                    TupleDesc td = Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(this.getStoredTableName(tableName)));
+                    TupleDesc td = Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(tableName));
                     Tuple tup = Utils.stringToTuple(td, tupleStr);
-                    int tableId = Database.getCatalog().getTableId(this.getStoredTableName(tableName));
+                    int tableId = Database.getCatalog().getTableId(tableName);
                     Database.getBufferPool().insertTuple(Global.TRANSACTION_ID, tableId, tup);
                 }
                 else if (line.startsWith("DELETE NODE")){
@@ -204,7 +186,7 @@ public class NodeServer {
 
         while(tableIdIterator.hasNext()){
             int tableId = tableIdIterator.next();
-            String tableName = this.getTableName(tableId);
+            String tableName = Database.getCatalog().getTableName(tableId);
             LOGGER.log(Level.INFO, tableName);
 
             if (tableName.startsWith(this.id)){

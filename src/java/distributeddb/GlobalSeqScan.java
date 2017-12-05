@@ -44,7 +44,7 @@ public class GlobalSeqScan implements OpIterator {
         this.node = node;
         this.tableName = tableName;
         this.tableAlias = tableAlias;
-        this.tupleIterator = Database.getCatalog().getDatabaseFile(node.getTableId(tableName)).iterator(tid);
+        this.tupleIterator = Database.getCatalog().getDatabaseFile(Database.getCatalog().getTableId(tableName)).iterator(tid);
     }
 
     /**
@@ -80,7 +80,7 @@ public class GlobalSeqScan implements OpIterator {
      *         prefixed with the tableAlias string from the constructor.
      */
     public TupleDesc getTupleDesc() {
-        final TupleDesc originTd = Database.getCatalog().getTupleDesc(node.getTableId(tableName));
+        final TupleDesc originTd = Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(tableName));
         // Now addTuple the prefix
         final int length = originTd.numFields();
         final Type[] typeAr = new Type[length];
@@ -129,7 +129,7 @@ public class GlobalSeqScan implements OpIterator {
                 public Void apply(String s) {
                     // TODO: fix the parsing
                     String[] parsed = s.split(" ");
-                    Tuple t = new Tuple(Database.getCatalog().getTupleDesc(node.getTableId(tableName)));
+                    Tuple t = new Tuple(Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(tableName)));
                     for (int i = 0; i < parsed.length; i++) {
                         t.setField(i, new IntField(Integer.parseInt(parsed[i])));
                     }
