@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sun.deploy.util.StringUtils;
 import distributeddb.GlobalSeqScan;
 import edu.mit.eecs.parserlib.UnableToParseException;
 import global.Global;
@@ -20,7 +19,6 @@ import querytree.QAggregate;
 import querytree.QueryParser;
 import querytree.QueryTree;
 import simpledb.*;
-import sun.rmi.runtime.Log;
 
 /**
  * Server class interact with the including database of the node and
@@ -32,7 +30,7 @@ public class NodeServer {
     private static final Logger LOGGER = Logger.getLogger(NodeServer.class.getName());
 
     private String id;
-    private final List<Machine> references;
+    private List<Machine> references;
     private final ServerSocket serverSocket;
     private final int port;
     
@@ -45,24 +43,6 @@ public class NodeServer {
     }
 
     /** Catalog-like Methods. We use this to reference a table associated with this Node. **/
-
-    public void addTable(DbFile table, String tableName) {
-        Database.getCatalog().addTable(table, getStoredTableName(tableName));
-    }
-
-    public String getTableName(int tableId) {
-        return Database.getCatalog().getTableName(tableId);
-    }
-
-    public int getTableId(String tableName) {
-        //return Database.getCatalog().getTableId(getStoredTableName(tableName));
-        return Database.getCatalog().getTableId(tableName);
-        // Changed by Gang Wang, 10:30PM
-    }
-
-    private String getStoredTableName(String tableName) {
-        return id + "." + tableName;
-    }
 
     private String getBaseTableName(String fullTableName){
         return fullTableName.replaceFirst("^" + this.id + ".", "");
@@ -83,6 +63,7 @@ public class NodeServer {
             return;
         }
         final String[] machineArray = machines.split(";");
+        references = new ArrayList<>();
         for (String machine : machineArray) {
             final Matcher matcher = Pattern.compile(Global.IP_PORT_REGEX).matcher(machine);
             if (!matcher.matches()) {
@@ -150,9 +131,9 @@ public class NodeServer {
                         }
                     }
                     tupleStr = tupleStr.trim();
-                    TupleDesc td = Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(this.getStoredTableName(tableName)));
+                    TupleDesc td = Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(tableName));
                     Tuple tup = Utils.stringToTuple(td, tupleStr);
-                    int tableId = Database.getCatalog().getTableId(this.getStoredTableName(tableName));
+                    int tableId = Database.getCatalog().getTableId(tableName);
                     Database.getBufferPool().insertTuple(Global.TRANSACTION_ID, tableId, tup);
                 }
                 else if (line.startsWith("DELETE NODE")){
@@ -201,7 +182,7 @@ public class NodeServer {
 
         while(tableIdIterator.hasNext()){
             int tableId = tableIdIterator.next();
-            String tableName = this.getTableName(tableId);
+            String tableName = Database.getCatalog().getTableName(tableId);
 
             if (tableName.startsWith(this.id)){
                 //TODO: idk what to use for alias. I just used name. Probs ok.
