@@ -14,6 +14,6 @@ do
     echo "Server run on port $PORT"
 done
 
-echo "Start client in 5 seconds..."
-sleep 5
+echo "Start client in 2 seconds..."
+sleep 2
 java -jar dist/simpledb.jar client local.txt
