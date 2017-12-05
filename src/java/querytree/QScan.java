@@ -28,6 +28,11 @@ class QScan implements QueryTree {
     }
 
     @Override
+    public String getRootType(){
+        return "SCAN";
+    }
+
+    @Override
     public void setIsGlobal(boolean isGlobal) {
         this.isGlobal = isGlobal;
     }

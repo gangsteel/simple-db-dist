@@ -16,6 +16,7 @@ import distributeddb.GlobalSeqScan;
 import edu.mit.eecs.parserlib.UnableToParseException;
 import global.Global;
 import global.Utils;
+import querytree.QAggregate;
 import querytree.QueryParser;
 import querytree.QueryTree;
 import simpledb.*;
@@ -123,11 +124,9 @@ public class NodeServer {
                 + socket.getPort() + " is connected. Local port: " + socket.getLocalPort() + ".");
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true); // TODO: should we autoFlush?
-        LOGGER.log(Level.INFO, "created streams");
 
         try {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
-                LOGGER.log(Level.INFO, "line received " + line);
                 if (line.equals("exit")) {
                     break; // A way to debug individual server
                 } else if (line.startsWith("machines:")) {
@@ -135,7 +134,6 @@ public class NodeServer {
                     break;
                 }
                 if (line.startsWith("WRITE")){
-                    LOGGER.log(Level.INFO, "got to write");
                     String[] reqArr = line.split(" ");
                     String tableName= reqArr[reqArr.length-1];
                     String tupleStr = "";
@@ -151,7 +149,6 @@ public class NodeServer {
                             inTuple = true;
                         }
                     }
-                    LOGGER.log(Level.INFO, "tuple string " + tupleStr);
                     tupleStr = tupleStr.trim();
                     TupleDesc td = Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(this.getStoredTableName(tableName)));
                     Tuple tup = Utils.stringToTuple(td, tupleStr);
@@ -164,7 +161,6 @@ public class NodeServer {
                     String port = reqArr[3];
                     this.removeReference(new Machine(ip, Integer.parseInt(port)));
                     if (this.id.equals(port)){
-                        LOGGER.log(Level.INFO, "port num " + this.id);
                         this.terminate();
                     }
                 }
@@ -206,19 +202,14 @@ public class NodeServer {
         while(tableIdIterator.hasNext()){
             int tableId = tableIdIterator.next();
             String tableName = this.getTableName(tableId);
-            LOGGER.log(Level.INFO, tableName);
 
             if (tableName.startsWith(this.id)){
                 //TODO: idk what to use for alias. I just used name. Probs ok.
                 String baseTableName = this.getBaseTableName(tableName);
 
-                LOGGER.log(Level.INFO, baseTableName);
-//                OpIterator scan = new GlobalSeqScan(Global.TRANSACTION_ID, this, baseTableName, baseTableName);
                 OpIterator scan = new SeqScan(Global.TRANSACTION_ID, tableId, baseTableName);
                 scan.open();
-                LOGGER.log(Level.INFO, "got past open");
                 while(scan.hasNext()){
-                    LOGGER.log(Level.INFO, "inside scan");
                     Tuple t = scan.next();
                     //TODO: do we want to hash on some particular attribute. Can maintain a map indicating which attribute we're hashing on
                     Machine destinaton = sortedMachines.get(t.hashCode()%(numServers-1));
@@ -229,13 +220,11 @@ public class NodeServer {
                                 Socket s = new Socket(destinaton.ipAddress, destinaton.port);
                                 BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                                 PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-                                LOGGER.log(Level.INFO, t.toString());
                                 out.println("WRITE " + "TUPLE " + t.toString() + " TABLE " + baseTableName);
                                 out.println("DONE");
                                 for (String line = in.readLine(); !line.equals("DONE"); in.readLine()) {
                                     //TODO: do something here probably
                                     System.out.println(line);
-                                    LOGGER.log(Level.INFO, line);
                                 }
                                 in.close();
                                 out.close();
@@ -260,6 +249,14 @@ public class NodeServer {
     }
 
     private void processQuery(QueryTree queryTree, PrintWriter outputStream){
+        if(queryTree.getRootType() == "AGGREGATE"){
+            QAggregate aggQuery = (QAggregate) queryTree;
+            if(aggQuery.getAggregator() == Aggregator.Op.AVG){
+
+            }
+
+
+        }
         OpIterator op = queryTree.getRootOp();
         try {
             op.open();

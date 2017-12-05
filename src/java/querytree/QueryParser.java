@@ -10,6 +10,7 @@ import edu.mit.eecs.parserlib.UnableToParseException;
 
 import networking.NodeServer;
 import querytree.QAggregate.Agg;
+import simpledb.Aggregator;
 import simpledb.IntField;
 import simpledb.Predicate;
 
@@ -60,7 +61,7 @@ public class QueryParser {
                 final List<ParseTree<QueryGrammar>> children = tree.children();
                 final QueryTree child = makeQueryTree(node, children.get(0));
                 final int colNum = Integer.parseInt(children.get(1).text());
-                final Agg agg = convertNameToAgg(children.get(2).text());
+                final Aggregator.Op agg = convertNameToAgg(children.get(2).text());
                 return QueryTree.aggregate(child, colNum, agg);
             }
             case JOIN: {
@@ -96,18 +97,18 @@ public class QueryParser {
         }
     }
 
-    private static Agg convertNameToAgg(String name) {
+    private static Aggregator.Op convertNameToAgg(String name) {
         switch (name) {
             case "MIN":
-                return Agg.MIN;
+                return Aggregator.Op.MIN;
             case "MAX":
-                return Agg.MAX;
+                return Aggregator.Op.MAX;
             case "SUM":
-                return Agg.SUM;
+                return Aggregator.Op.SUM;
             case "AVG":
-                return Agg.AVG;
+                return Aggregator.Op.AVG;
             case "COUNT":
-                return Agg.COUNT;
+                return Aggregator.Op.COUNT;
             default:
                 throw new AssertionError("should never get here");
         }

@@ -23,6 +23,11 @@ class QFilter implements QueryTree {
     }
 
     @Override
+    public String getRootType(){
+        return "FILTER";
+    }
+
+    @Override
     public String toString() {
         return String.format("FILTER(%s , %d %s %s)", child.toString(), predicate.getField(), predicate.getOp().toString(),
                 predicate.getOperand().toString());

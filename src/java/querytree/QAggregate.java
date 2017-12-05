@@ -1,9 +1,11 @@
 package querytree;
 
 import networking.NodeServer;
+import simpledb.Aggregator;
 import simpledb.OpIterator;
+import simpledb.Aggregate;
 
-class QAggregate implements QueryTree {
+public class QAggregate implements QueryTree {
     
     public enum Agg {
         MIN, MAX, SUM, AVG, COUNT;
@@ -23,12 +25,13 @@ class QAggregate implements QueryTree {
             throw new IllegalStateException("impossible to reach here");
         }
     }
-    
+
+    // TODO: change parser to handle Aggregator.Op
     private final QueryTree child;
     private final int colNum;
-    private final Agg aggregator;
+    private final Aggregator.Op aggregator;
     
-    QAggregate(QueryTree child, int colNum, Agg aggregator) {
+    QAggregate(QueryTree child, int colNum, Aggregator.Op aggregator) {
         this.child = child;
         this.colNum = colNum;
         this.aggregator = aggregator;
@@ -36,7 +39,16 @@ class QAggregate implements QueryTree {
 
     @Override
     public OpIterator getRootOp() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return new Aggregate(this.child.getRootOp(), this.colNum, Aggregator.NO_GROUPING, aggregator);
+    }
+
+    @Override
+    public String getRootType(){
+        return "AGGREGATE";
+    }
+
+    public Aggregator.Op getAggregator(){
+        return this.aggregator;
     }
 
     @Override

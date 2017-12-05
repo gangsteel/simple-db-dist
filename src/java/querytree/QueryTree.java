@@ -27,7 +27,7 @@ public interface QueryTree {
         return new QFilter(child, colNum, pred, operand);
     }
     
-    public static QueryTree aggregate(QueryTree child, int colNum, QAggregate.Agg aggregator) {
+    public static QueryTree aggregate(QueryTree child, int colNum, Aggregator.Op aggregator) {
         return new QAggregate(child, colNum, aggregator);
     }
 
@@ -38,6 +38,9 @@ public interface QueryTree {
     public OpIterator getRootOp();
 
     public void setIsGlobal(boolean isGlobal);
+
+    public String getRootType();
+
 
 
 

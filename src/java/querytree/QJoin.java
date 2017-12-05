@@ -36,6 +36,11 @@ public class QJoin implements QueryTree {
     }
 
     @Override
+    public String getRootType(){
+        return "JOIN";
+    }
+
+    @Override
     public String toString() {
         return String.format("JOIN(%s, %s, %d %s %d)", child1.toString(), child2.toString(), joinPredicate.getField1(),
                 joinPredicate.getOperator().toString(), joinPredicate.getField2());
