@@ -1,12 +1,12 @@
-Exception in thread "main" java.lang.RuntimeException: java.net.BindException: Address already in use (Bind failed)
-	at networking.NodeServer.main(NodeServer.java:276)
-	at simpledb.SimpleDb.main(SimpleDb.java:97)
-Caused by: java.net.BindException: Address already in use (Bind failed)
-	at java.net.PlainSocketImpl.socketBind(Native Method)
-	at java.net.AbstractPlainSocketImpl.bind(AbstractPlainSocketImpl.java:387)
-	at java.net.ServerSocket.bind(ServerSocket.java:375)
-	at java.net.ServerSocket.<init>(ServerSocket.java:237)
-	at java.net.ServerSocket.<init>(ServerSocket.java:128)
-	at networking.NodeServer.<init>(NodeServer.java:40)
-	at networking.NodeServer.main(NodeServer.java:272)
-	... 1 more
+Added table : test.1 with schema [f1(INT_TYPE), f2(INT_TYPE), f3(INT_TYPE)]
+Added table : test.2 with schema [f1(INT_TYPE), f2(INT_TYPE), f3(INT_TYPE)]
+Dec 05, 2017 9:29:52 PM networking.NodeServer handleConnection
+INFO: Client from /127.0.0.1:61372 is connected. Local port: 8002.
+Dec 05, 2017 9:29:52 PM networking.NodeServer addAllReferences
+INFO: Fellow child node Machine{ipAddress='127.0.0.1', port=8001} added.
+Dec 05, 2017 9:29:52 PM networking.NodeServer handleConnection
+INFO: Client from /127.0.0.1:61372 is leaving.
+Dec 05, 2017 9:31:30 PM networking.NodeServer handleConnection
+INFO: Client from /127.0.0.1:61399 is connected. Local port: 8002.
+Dec 05, 2017 9:31:49 PM networking.NodeServer handleConnection
+INFO: Client from /127.0.0.1:61399 is leaving.

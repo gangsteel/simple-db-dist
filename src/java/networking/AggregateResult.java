@@ -34,10 +34,15 @@ public class AggregateResult {
     public void merge(String stringTup){
         LOGGER.log(Level.INFO, stringTup);
         QAggregate aggTree = (QAggregate) this.queryTree;
-        TupleDesc td = this.queryTree.getRootOp().getTupleDesc();
+        TupleDesc td = null;
         if (aggTree.getAggregator() == Aggregator.Op.AVG){
             Type[] typeArr = {Type.INT_TYPE, Type.INT_TYPE};
             String[] fieldArr = {"count", "sum"};
+            td = new TupleDesc(typeArr, fieldArr);
+        }
+        else{
+            Type[] typeArr = {Type.INT_TYPE};
+            String[] fieldArr = {"aggField"};
             td = new TupleDesc(typeArr, fieldArr);
         }
         Tuple t = Utils.stringToTuple(td, stringTup);
