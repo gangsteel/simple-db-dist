@@ -36,22 +36,26 @@ public class QueryParser {
     }
 
     public static QueryTree parse(NodeServer node, String command) throws UnableToParseException {
-        final ParseTree<QueryGrammar> parseTree = PARSER.parse(command);
-        return makeQueryTree(node, parseTree);
+        return parse(node, command, false);
     }
 
-    private static QueryTree makeQueryTree(NodeServer node, final ParseTree<QueryGrammar> tree) {
+    public static QueryTree parse(NodeServer node, String command, boolean useSimpleDb) throws UnableToParseException {
+        final ParseTree<QueryGrammar> parseTree = PARSER.parse(command);
+        return makeQueryTree(node, parseTree, useSimpleDb);
+    }
+
+    private static QueryTree makeQueryTree(NodeServer node, final ParseTree<QueryGrammar> tree, boolean useSimpleDb) {
         switch (tree.name()) {
             case COMMANDS: {
-                return makeQueryTree(node, tree.children().get(0));
+                return makeQueryTree(node, tree.children().get(0), useSimpleDb);
             }
             case SCAN: {
                 final String tableName = tree.children().get(0).text();
-                return QueryTree.scan(node, tableName, tableName);
+                return QueryTree.scan(node, tableName, tableName, useSimpleDb);
             }
             case FILTER: {
                 final List<ParseTree<QueryGrammar>> children = tree.children();
-                final QueryTree child = makeQueryTree(node, children.get(0));
+                final QueryTree child = makeQueryTree(node, children.get(0), useSimpleDb);
                 final int colNum = Integer.parseInt(children.get(1).text());
                 final Predicate.Op pred = convertSignToPred(children.get(2).text());
                 final int operand = Integer.parseInt(children.get(3).text());
@@ -59,15 +63,15 @@ public class QueryParser {
             }
             case AGGREGATE: {
                 final List<ParseTree<QueryGrammar>> children = tree.children();
-                final QueryTree child = makeQueryTree(node, children.get(0));
+                final QueryTree child = makeQueryTree(node, children.get(0), useSimpleDb);
                 final int colNum = Integer.parseInt(children.get(1).text());
                 final Aggregator.Op agg = convertNameToAgg(children.get(2).text());
                 return QueryTree.aggregate(child, colNum, agg);
             }
             case JOIN: {
                 final List<ParseTree<QueryGrammar>> children = tree.children();
-                final QueryTree child1 = makeQueryTree(node, children.get(0));
-                final QueryTree child2 = makeQueryTree(node, children.get(1));
+                final QueryTree child1 = makeQueryTree(node, children.get(0), useSimpleDb);
+                final QueryTree child2 = makeQueryTree(node, children.get(1), useSimpleDb);
                 final int colNum1 = Integer.parseInt(children.get(2).text());
                 final Predicate.Op op = convertSignToPred(children.get(3).text());
                 final int colNum2 = Integer.parseInt(children.get(4).text());

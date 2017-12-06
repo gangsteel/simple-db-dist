@@ -1,12 +1,15 @@
 package simpledb;
 import java.io.*;
 
+import edu.mit.eecs.parserlib.UnableToParseException;
 import networking.HeadNode;
 import networking.NodeServer;
+import querytree.QueryParser;
+import querytree.QueryTree;
 
 public class SimpleDb {
     public static void main (String args[])
-            throws DbException, TransactionAbortedException, IOException {
+            throws DbException, TransactionAbortedException, IOException, UnableToParseException {
         // convert a file
         if(args[0].equals("convert")) {
         try {
@@ -100,6 +103,15 @@ public class SimpleDb {
         else if (args[0].equals("client")) {
             HeadNode.main(new String[]{args[1]}); // Format: client FILENAME
             // FILENAME can be local.txt for local benchmarking
+        }
+        else if (args[0].equals("simple")) {
+            Database.getCatalog().loadSchema("config/child/" + 8001 + "/catalog.txt");
+            QueryTree qt = QueryParser.parse(null, args[1], true /*useSimpleDb*/);
+            OpIterator it = qt.getRootOp();
+            it.open();
+            while (it.hasNext()) {
+                System.out.println(it.next());
+            }
         }
         else {
             System.err.println("Unknown command: " + args[0]);

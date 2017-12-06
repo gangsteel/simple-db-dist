@@ -10,16 +10,18 @@ class QScan implements QueryTree {
     private final NodeServer node;
     private final String tableName;
     private final String tableAlias;
+    private final boolean useSimpleDb;
     private boolean isGlobal;
 
-    QScan(NodeServer node, String name, String alias) {
+    QScan(NodeServer node, String name, String alias, boolean useSimpleDb) {
         this.node = node;
         this.tableName = name;
         this.tableAlias = alias;
+        this.useSimpleDb = useSimpleDb;
     }
 
     public OpIterator getRootOp(){
-        if (!isGlobal) {
+        if (!isGlobal || useSimpleDb) {
             return new SeqScan(Global.TRANSACTION_ID, Database.getCatalog().getTableId(tableName), this.tableAlias);
         }
         else {

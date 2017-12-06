@@ -19,3 +19,7 @@ Some shell scripts are provided to facilitate benchmarking. Here are the steps:
 3) Now the servers should be running. After 5 seconds, the client (head node) should be running. Now you can type in queries. e.g. SCAN(test.1), SCAN(test.2), FILTER(SCAN(test.1), 1>8), JOIN(SCAN(test.1), SCAN(test.2), 0=0), ...
 
 4) Don't forget to cleanup. First, run "killall java" to stop the servers. Then, cd to config directory and run cleanup.sh to clean up the data files. ** some automation here as well? **
+
+SimpleDb
+
+If you want to run a query from the commandline on SimpleDb only (no networking and not distributed), then you can run "java -jar dist/simpledb.jar simple [QUERY_PLAN_STRING]".
