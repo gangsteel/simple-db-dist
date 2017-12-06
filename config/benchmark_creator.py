@@ -49,8 +49,8 @@ def create_benchmark(tuples_of_each_table, partitioning_of_each_table, randomize
     _make_dir_if_not_exists(unpartitioned_dir)
     unpartitioned_heapfile = create_heap_file(tuples, num_fields, fn=os.path.join(unpartitioned_dir, "test.%d.dat" % tidx))
     # Also write/append to catalog.txt
-    with open(os.path.join(unpartitioned_dir, 'catalog.txt'), 'w') as f:
-      f.write('%s (%s)' % ('test.%d' % tidx, ', '.join(map(lambda i: 'f%d int' % i, xrange(1, num_fields+1)))))
+    with open(os.path.join(unpartitioned_dir, 'catalog.txt'), 'a') as f:
+      f.write('%s (%s)\n' % ('test.%d' % tidx, ', '.join(map(lambda i: 'f%d int' % i, xrange(1, num_fields+1)))))
 
     # Randomize the tuples if necessary before partitioning
     if randomize: shuffle(tuples)
