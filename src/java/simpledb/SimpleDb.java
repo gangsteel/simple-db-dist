@@ -105,7 +105,7 @@ public class SimpleDb {
             // FILENAME can be local.txt for local benchmarking
         }
         else if (args[0].equals("simple")) {
-            Database.getCatalog().loadSchema("config/child/" + 8001 + "/catalog.txt");
+            Database.getCatalog().loadSchema("config/child/" + 9999 + "/catalog.txt");
             QueryTree qt = QueryParser.parse(null, args[1], true /*useSimpleDb*/);
             OpIterator it = qt.getRootOp();
             it.open();
