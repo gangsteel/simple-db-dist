@@ -229,40 +229,78 @@ public class NodeServer {
 
     }
 
-    private void processQuery(QueryTree queryTree, PrintWriter outputStream){
-        if(queryTree.getRootType() == "AGGREGATE"){
+    private boolean isAvgQuery(QueryTree queryTree){
+        if (queryTree.getRootType() == "AGGREGATE"){
             QAggregate aggQuery = (QAggregate) queryTree;
             if(aggQuery.getAggregator() == Aggregator.Op.AVG){
+                return true;
+            }
+        }
+        return false;
+    }
 
+    private void processQuery(QueryTree queryTree, PrintWriter outputStream){
+        if(isAvgQuery(queryTree)){
+            QAggregate aggQuery = (QAggregate) queryTree;
+            QueryTree q1 = QueryTree.aggregate(aggQuery.getChild(), aggQuery.getColNum(), Aggregator.Op.COUNT);
+            QueryTree q2 = QueryTree.aggregate(aggQuery.getChild(), aggQuery.getColNum(), Aggregator.Op.SUM);
+            OpIterator op1 = q1.getRootOp();
+            OpIterator op2 = q2.getRootOp();
+            int count = 0;
+            int sum = 0;
+            try {
+                op1.open();
+                op2.open();
+            } catch (DbException e) {
+                e.printStackTrace();
+            } catch (TransactionAbortedException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (op1.hasNext() && op2.hasNext()){
+                    count = ((IntField) op1.next().getField(0)).getValue();
+                    sum = ((IntField) op2.next().getField(0)).getValue();
+                    Type[] typeArr = {Type.INT_TYPE, Type.INT_TYPE};
+                    String[] fieldArr = {"count", "sum"};
+                    Tuple t = new Tuple(new TupleDesc(typeArr, fieldArr));
+                    t.setField(0, new IntField(count));
+                    t.setField(1, new IntField(sum));
+                    outputStream.println(t.toString());
+                    outputStream.println("END");
+                }
+            } catch (DbException e) {
+                e.printStackTrace();
+            } catch (TransactionAbortedException e) {
+                e.printStackTrace();
             }
 
-
         }
-        OpIterator op = queryTree.getRootOp();
-        try {
-            op.open();
-        } catch (DbException e) {
-            e.printStackTrace();
-        } catch (TransactionAbortedException e) {
-            e.printStackTrace();
-        }
-        try {
-            while (op.hasNext()) {
-                Tuple t = op.next();
-                outputStream.println(t.toString());
+        else {
+            OpIterator op = queryTree.getRootOp();
+            try {
+                op.open();
+            } catch (DbException e) {
+                e.printStackTrace();
+            } catch (TransactionAbortedException e) {
+                e.printStackTrace();
             }
-            outputStream.println("END");
-        }
-        catch(DbException e){
-            LOGGER.log(Level.INFO, "There was an error processing query");
-            e.printStackTrace();
-            //TODO: do error handling
-        }
-        catch(TransactionAbortedException e){
-            LOGGER.log(Level.INFO, "Transaction aborted while processing query");
-            e.printStackTrace();
-            //TODO: do error handling
+            try {
+                while (op.hasNext()) {
+                    Tuple t = op.next();
+                    LOGGER.log(Level.INFO, t.toString());
+                    outputStream.println(t.toString());
+                }
+                outputStream.println("END");
+            } catch (DbException e) {
+                LOGGER.log(Level.INFO, "There was an error processing query");
+                e.printStackTrace();
+                //TODO: do error handling
+            } catch (TransactionAbortedException e) {
+                LOGGER.log(Level.INFO, "Transaction aborted while processing query");
+                e.printStackTrace();
+                //TODO: do error handling
 
+            }
         }
     }
     

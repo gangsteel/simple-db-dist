@@ -50,17 +50,17 @@ public interface Aggregator extends Serializable {
         public String toString()
         {
         	if (this==MIN)
-        		return "min";
+        		return "MIN";
         	if (this==MAX)
-        		return "max";
+        		return "MAX";
         	if (this==SUM)
-        		return "sum";
+        		return "SUM";
         	if (this==SUM_COUNT)
     			return "sum_count";
         	if (this==AVG)
-        		return "avg";
+        		return "AVG";
         	if (this==COUNT)
-        		return "count";
+        		return "COUNT";
         	if (this==SC_AVG)
     			return "sc_avg";
         	throw new IllegalStateException("impossible to reach here");

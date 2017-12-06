@@ -34,11 +34,9 @@ public class HeadNode {
     
     private final List<String> childrenIps = new ArrayList<>();
     private final List<Integer> childrenPorts = new ArrayList<>();
-    private Result result;
     private static final Logger LOGGER = Logger.getLogger(HeadNode.class.getName());
 
     public HeadNode(){
-        this.result = null;
     }
     
     /**
@@ -135,9 +133,10 @@ public class HeadNode {
      * @param queryTree query
      * @return
      */
-    public Result processQuery(QueryTree queryTree){
+    public void processQuery(QueryTree queryTree){
         final long startTime = System.nanoTime();
-        this.result = new Result(queryTree);
+        AggregateResult aggResult = new AggregateResult(queryTree);
+
         List<Thread> workers = new ArrayList<>();
         for (int i = 0; i < childrenIps.size(); i++){
             final String ip = childrenIps.get(i);
@@ -146,7 +145,10 @@ public class HeadNode {
                 @Override
                 public Void apply(String s) {
                     System.out.println(s);
-                    result.merge(s);
+                    if (queryTree.getRootType() == "AGGREGATE"){
+                        aggResult.merge(s);
+                    }
+//                    result.merge(s);
                     return null;
                 }
             }));
@@ -160,10 +162,13 @@ public class HeadNode {
                 e.printStackTrace();
             }
         });
+        if(queryTree.getRootType() == "AGGREGATE"){
+            System.out.println("Aggregate result: ");
+            aggResult.printResult();
+        }
         final long endTime = System.nanoTime();
         final long duration = endTime - startTime;
         System.out.println("Query time: " + (double)duration / 1000000.0 + "ms.");
-        return this.result;
     }
 
     /**

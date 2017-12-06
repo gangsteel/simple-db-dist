@@ -1,0 +1,12 @@
+Exception in thread "main" java.lang.RuntimeException: java.net.BindException: Address already in use (Bind failed)
+	at networking.NodeServer.main(NodeServer.java:276)
+	at simpledb.SimpleDb.main(SimpleDb.java:97)
+Caused by: java.net.BindException: Address already in use (Bind failed)
+	at java.net.PlainSocketImpl.socketBind(Native Method)
+	at java.net.AbstractPlainSocketImpl.bind(AbstractPlainSocketImpl.java:387)
+	at java.net.ServerSocket.bind(ServerSocket.java:375)
+	at java.net.ServerSocket.<init>(ServerSocket.java:237)
+	at java.net.ServerSocket.<init>(ServerSocket.java:128)
+	at networking.NodeServer.<init>(NodeServer.java:40)
+	at networking.NodeServer.main(NodeServer.java:272)
+	... 1 more

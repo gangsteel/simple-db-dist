@@ -1,5 +1,6 @@
 .classpath
 .project
+.metadata
 bin/
 dist/
 log

@@ -51,6 +51,14 @@ public class QAggregate implements QueryTree {
         return this.aggregator;
     }
 
+    public QueryTree getChild(){
+        return this.child;
+    }
+
+    public int getColNum(){
+        return this.colNum;
+    }
+
     @Override
     public void setIsGlobal(boolean isGlobal) {
         child.setIsGlobal(isGlobal);
