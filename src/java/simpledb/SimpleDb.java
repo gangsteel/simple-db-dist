@@ -107,11 +107,15 @@ public class SimpleDb {
         else if (args[0].equals("simple")) {
             Database.getCatalog().loadSchema("config/child/" + 9999 + "/catalog.txt");
             QueryTree qt = QueryParser.parse(null, args[1], true /*useSimpleDb*/);
+            final long startTime = System.nanoTime();
             OpIterator it = qt.getRootOp();
             it.open();
             while (it.hasNext()) {
                 System.out.println(it.next());
             }
+            final long endTime = System.nanoTime();
+            final long duration = endTime - startTime;
+            System.out.println("Query time: " + (double)duration / 1000000.0 + "ms.");
         }
         else {
             System.err.println("Unknown command: " + args[0]);
