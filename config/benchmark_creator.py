@@ -4,6 +4,8 @@ from glob import glob
 from shutil import rmtree
 import os
 
+my_path = os.path.abspath(os.path.dirname(__file__))
+
 def create_benchmark(tuples_of_each_table, partitioning_of_each_table, randomize=True):
   '''
   Creates a benchmark. You MUST make sure that this method is called in the /config directory.
@@ -22,14 +24,14 @@ def create_benchmark(tuples_of_each_table, partitioning_of_each_table, randomize
   unpartitioned_port = 9999
 
   # First clean up and delete everything in child
-  for f in glob('./child/*'): os.system("rm -rf %s" % f)
+  for f in glob(os.path.join(my_path, '/child/*')): os.system("rm -rf %s" % f)
 
   # Determine the number of ports
   if len(partitioning_of_each_table) == 0: raise 'There must be at least one partitioning!'
   num_ports = len(partitioning_of_each_table[0])
 
   # Create local.txt in /head. Will overwrite if exists
-  with open('head/local.txt', 'w') as f:
+  with open(os.path.join(my_path, 'head/local.txt'), 'w') as f:
     for i in xrange(num_ports): f.write("127.0.0.1:%d\n" % (i + starting_port))
 
   for tidx in xrange(num_tables):
@@ -45,7 +47,7 @@ def create_benchmark(tuples_of_each_table, partitioning_of_each_table, randomize
     if len(tuples) != sum(partitioning): raise RuntimeError('The number of tuples must match partitioning')
 
     # Create unpartitioned file first
-    unpartitioned_dir = "child/%d" % unpartitioned_port
+    unpartitioned_dir = os.path.join(my_path, "child/%d" % unpartitioned_port)
     _make_dir_if_not_exists(unpartitioned_dir)
     unpartitioned_heapfile = create_heap_file(tuples, num_fields, fn=os.path.join(unpartitioned_dir, "test.%d.dat" % tidx))
     # Also write/append to catalog.txt
@@ -61,7 +63,7 @@ def create_benchmark(tuples_of_each_table, partitioning_of_each_table, randomize
       num_rows = partitioning[pidx]
       partition_tuples = tuples[offset:offset+num_rows]
       offset += num_rows
-      partition_dir = "child/%d" % (starting_port + pidx)
+      partition_dir = os.path.join(my_path, "child/%d" % (starting_port + pidx))
       table_name = "test.%d" % tidx
       fn = "%s.dat" % table_name
       _make_dir_if_not_exists(partition_dir)
