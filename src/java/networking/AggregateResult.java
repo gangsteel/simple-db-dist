@@ -69,7 +69,6 @@ public class AggregateResult {
 
     public void printResult(){
         QAggregate aggTree = (QAggregate) this.queryTree;
-        TupleDesc td = this.queryTree.getRootOp().getTupleDesc();
 //        int aggVal = 0;
         switch(aggTree.getAggregator()){
             case COUNT:
