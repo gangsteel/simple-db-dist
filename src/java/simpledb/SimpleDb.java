@@ -10,7 +10,7 @@ import querytree.QueryTree;
 
 public class SimpleDb {
     public static void main (String args[])
-            throws DbException, TransactionAbortedException, IOException, UnableToParseException {
+            throws DbException, TransactionAbortedException, IOException, UnableToParseException, InterruptedException {
         // convert a file
         if(args[0].equals("convert")) {
         try {
@@ -115,6 +115,8 @@ public class SimpleDb {
             // ordering
             HeadNode headNode = new HeadNode();
             headNode.addChildNodesFromFile(args[1]); // args[1] is the file containing the URL and port of each child
+            headNode.broadcastChilds();
+            Thread.sleep(1000); // wait a second before query so children know where each other are
             QueryTree qt = QueryParser.parse(null, args[2]);
             headNode.processQuery(qt);
         }
