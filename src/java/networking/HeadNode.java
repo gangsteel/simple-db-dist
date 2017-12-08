@@ -171,14 +171,7 @@ public class HeadNode {
         System.out.println("Query time: " + (double)duration / 1000000.0 + "ms.");
     }
 
-    /**
-     * The main function to start head node and accepting client's requests
-     * @param args String array with length of 1, representing the file name for
-     * head node configuration. The file should be located in config/head directory
-     */
-    public static void main(String[] args) {
-        final String fileName = "config/head/" + args[0];
-        HeadNode head = new HeadNode();
+    public void addChildNodesFromFile(String fileName) {
         try ( final BufferedReader fileReader = new BufferedReader(new FileReader(new File(fileName))) ) {
             String line;
             while ( (line = fileReader.readLine()) != null ) {
@@ -187,13 +180,24 @@ public class HeadNode {
                     throw new RuntimeException("Wrong format of IP and port: #.#.#.#:#");
                 }
                 // System.out.println(matcher.group(1)); System.out.println(matcher.group(2));
-                head.addChildNode(matcher.group(1), Integer.parseInt(matcher.group(2)));
+                addChildNode(matcher.group(1), Integer.parseInt(matcher.group(2)));
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException("File not found in config/head directory!");
         } catch (IOException e) {
             throw new RuntimeException("IO error during reading the file");
         }
+    }
+
+    /**
+     * The main function to start head node and accepting client's requests
+     * @param args String array with length of 1, representing the file name for
+     * head node configuration. The file should be located in config/head directory
+     */
+    public static void main(String[] args) {
+        final String fileName = "config/head/" + args[0];
+        HeadNode head = new HeadNode();
+        head.addChildNodesFromFile(fileName);
         try {
             head.broadcastChilds();
             head.getInput();

@@ -3,3 +3,9 @@ catalog.txt    catalog file storing the table information
 child    configuration files for the child nodes
 head    configuration file for the head node
 temp    temp files for testing
+
+# To run a benchmark
+
+* First create benchmark data. You can do so via running one of the benchmark*.py files
+* Start the child nodes with startChildNode.sh (should be run from root). The single required parameter is the number of nodes.
+* Test a query by running a script in the /query_running_scripts directory. To see the query, check the script file.

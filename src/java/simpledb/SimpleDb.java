@@ -4,6 +4,7 @@ import java.io.*;
 import edu.mit.eecs.parserlib.UnableToParseException;
 import networking.HeadNode;
 import networking.NodeServer;
+import querytree.QTreeProcessor;
 import querytree.QueryParser;
 import querytree.QueryTree;
 
@@ -104,18 +105,18 @@ public class SimpleDb {
             HeadNode.main(new String[]{args[1]}); // Format: client FILENAME
             // FILENAME can be local.txt for local benchmarking
         }
-        else if (args[0].equals("simple")) {
+        else if (args[0].equals("simple")) { // Runs a single query to check SimpleDb performance
             Database.getCatalog().loadSchema("config/child/" + 9999 + "/catalog.txt");
             QueryTree qt = QueryParser.parse(null, args[1], true /*useSimpleDb*/);
-            final long startTime = System.nanoTime();
-            OpIterator it = qt.getRootOp();
-            it.open();
-            while (it.hasNext()) {
-                System.out.println(it.next());
-            }
-            final long endTime = System.nanoTime();
-            final long duration = endTime - startTime;
-            System.out.println("Query time: " + (double)duration / 1000000.0 + "ms.");
+            QTreeProcessor.processQuery(qt);
+        }
+        else if (args[0].equals("distributed")) { // Runs a single query to check DistributedDb performance
+            // Takes in many urls. The urls are in order such that they correspond to partition in port 8001, 8002, ...
+            // ordering
+            HeadNode headNode = new HeadNode();
+            headNode.addChildNodesFromFile(args[1]); // args[1] is the file containing the URL and port of each child
+            QueryTree qt = QueryParser.parse(null, args[2]);
+            headNode.processQuery(qt);
         }
         else {
             System.err.println("Unknown command: " + args[0]);
