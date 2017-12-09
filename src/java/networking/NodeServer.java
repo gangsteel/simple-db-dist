@@ -287,8 +287,7 @@ public class NodeServer {
             try {
                 while (op.hasNext()) {
                     Tuple t = op.next();
-                    LOGGER.log(Level.INFO, t.toString());
-                    outputStream.println(t.toString());
+                    outputStream.print(t.toString() + System.lineSeparator());
                 }
                 outputStream.println("END");
             } catch (DbException e) {
