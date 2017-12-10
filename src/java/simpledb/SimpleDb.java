@@ -108,7 +108,8 @@ public class SimpleDb {
         else if (args[0].equals("simple")) { // Runs a single query to check SimpleDb performance
             Database.getCatalog().loadSchema("config/child/" + 9999 + "/catalog.txt");
             QueryTree qt = QueryParser.parse(null, args[1], true /*useSimpleDb*/);
-            QTreeProcessor.processQuery(qt);
+            int numTimes = (args.length == 3) ? Integer.parseInt(args[2]) : 1;
+            for (int i = 0; i < numTimes; i++) QTreeProcessor.processQuery(qt);
         }
         else if (args[0].equals("distributed")) { // Runs a single query to check DistributedDb performance
             // Takes in many urls. The urls are in order such that they correspond to partition in port 8001, 8002, ...
@@ -117,8 +118,11 @@ public class SimpleDb {
             headNode.addChildNodesFromFile(args[1]); // args[1] is the file containing the URL and port of each child
             headNode.broadcastChilds();
             Thread.sleep(1000); // wait a second before query so children know where each other are
-            QueryTree qt = QueryParser.parse(null, args[2]);
-            headNode.processQuery(qt);
+            int numQueries = args.length - 2;
+            for (int i = 0; i < numQueries; i++) {
+                QueryTree qt = QueryParser.parse(null, args[i+2]);
+                headNode.processQuery(qt);
+            }
         }
         else {
             System.err.println("Unknown command: " + args[0]);
