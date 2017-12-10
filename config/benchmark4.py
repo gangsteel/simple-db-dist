@@ -8,5 +8,5 @@ if __name__ == '__main__':
 
   tuples_of_each_table = [ t1_tuples ]
   num_partitions = 4
-  partitioning_of_each_tuple = [ [num_tuples1/num_partitions for i in xrange(num_partitions)] ]
+  partitioning_of_each_tuple = [ [int(num_tuples1/num_partitions) for i in xrange(num_partitions)] ]
   create_benchmark(tuples_of_each_table, partitioning_of_each_tuple)

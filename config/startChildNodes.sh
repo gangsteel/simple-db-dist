@@ -1,11 +1,12 @@
-#!/bin/bash
-
+#!/bin/sh
 NODE_NUMBER=$1
+echo $E_NUMBER
 if [[ $# -eq 0 ]]
     then
         echo "Please specify the number of child nodes!!!"
         exit -1
 fi
+
 
 for i in $(seq 1 $NODE_NUMBER)
 do
