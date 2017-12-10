@@ -2,10 +2,7 @@
 
 query=$1
 
-for i in {1..5}
-do
-    bash ./config/query_running_scripts/run_single_distributed.sh $query
-done
+bash ./config/query_running_scripts/run_single_distributed.sh $query
 
 echo 'Wait a few seconds before running on SimpleDb'
 sleep 3
