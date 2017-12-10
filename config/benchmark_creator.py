@@ -24,7 +24,9 @@ def create_benchmark(tuples_of_each_table, partitioning_of_each_table, randomize
   unpartitioned_port = 9999
 
   # First clean up and delete everything in child
-  for f in glob(os.path.join(my_path, '/child/*')): os.system("rm -rf %s" % f)
+  child_things = os.path.join(my_path, 'child/*')
+  print 'Remove all files and folders satisfying', child_things
+  os.system("rm -rf %s" % child_things)
 
   # Determine the number of ports
   if len(partitioning_of_each_table) == 0: raise 'There must be at least one partitioning!'
