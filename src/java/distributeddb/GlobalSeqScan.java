@@ -133,7 +133,11 @@ public class GlobalSeqScan implements OpIterator {
                     for (int i = 0; i < parsed.length; i++) {
                         t.setField(i, new IntField(Integer.parseInt(parsed[i])));
                     }
-                    queue.addTuple(t);
+                    try {
+                        queue.addTuple(t);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     return null;
                 }
             });
@@ -152,8 +156,8 @@ public class GlobalSeqScan implements OpIterator {
             workers = new ArrayList<>();
         }
 
-        public void addTuple(Tuple tuple) {
-            queue.add(tuple);
+        public void addTuple(Tuple tuple) throws InterruptedException {
+            queue.put(tuple);
         }
 
         public void addWorker(Thread thread) {
