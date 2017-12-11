@@ -106,6 +106,7 @@ public class NodeServer {
                 + socket.getPort() + " is connected. Local port: " + socket.getLocalPort() + ".");
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true); // TODO: should we autoFlush?
+        Global.PROFILER.incrementType(Profiler.Type.PROCESSING, 50);
 
         try {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
@@ -152,6 +153,7 @@ public class NodeServer {
                         long t1 = System.nanoTime();
                         processQuery(qt, out);
                         long t2 = System.nanoTime();
+                        System.out.println("processing time " + (t2-t1));
                         Global.PROFILER.incrementType(Profiler.Type.PROCESSING, t2-t1);
                     }catch (UnableToParseException e) {
                             out.println("Unable to parse your command!"); // TODO: More information
@@ -168,10 +170,6 @@ public class NodeServer {
         }
     }
 
-    private void insert(){
-
-
-    }
 
     private void terminate() throws DbException, TransactionAbortedException{
         int numServers = this.references.size();
@@ -290,7 +288,11 @@ public class NodeServer {
             }
             try {
                 while (op.hasNext()) {
+                    long t1 = System.nanoTime();
                     Tuple t = op.next();
+                    long t2 = System.nanoTime();
+                    System.out.println("processing " + (t2-t1));
+                    Global.PROFILER.incrementType(Profiler.Type.PROCESSING, t2-t1);
                     outputStream.println("TIME: " + System.nanoTime());
                     outputStream.print(t.toString() + System.lineSeparator());
                 }

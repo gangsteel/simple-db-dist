@@ -140,10 +140,11 @@ public class HeadNode {
             Thread t = new Thread(new NodeRequestWorker(ip, port, queryTree, new Function<String, Void>() {
                 @Override
                 public Void apply(String s) {
-                    long t = System.nanoTime();
+                    long tend = System.nanoTime();
                     if(s.startsWith("TIME")){
                         long start = Long.parseLong(s.split(" ")[1]);
-                        Global.PROFILER.incrementType(Profiler.Type.TRANSFER, t-start);
+                        System.out.println("time " + (tend-start));
+                        Global.PROFILER.incrementType(Profiler.Type.TRANSFER, tend-start);
                     }
                     else if (queryTree.getRootType() == "AGGREGATE"){
                         aggResult.merge(s);

@@ -25,6 +25,7 @@ public class Profiler {
     }
 
     public void incrementType(Type t, long time){
+        System.out.println(t + " " + time);
         if (time < 0){
             System.out.println("bad time");
             return;
@@ -36,7 +37,7 @@ public class Profiler {
 
     public void printStats(){
         for (Type category: this.timeAllocationMap.keySet()){
-            System.out.println(category + ": " + this.timeAllocationMap.get(category) + "ns");
+            System.out.println(category + ": " + this.timeAllocationMap.get(category)+ "ns");
         }
     }
 
