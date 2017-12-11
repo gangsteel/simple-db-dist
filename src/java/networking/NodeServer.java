@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import distributeddb.GlobalSeqScan;
+import distributeddb.Profiler;
 import edu.mit.eecs.parserlib.UnableToParseException;
 import global.Global;
 import global.Utils;
@@ -148,7 +149,10 @@ public class NodeServer {
                 else {
                     try{
                         QueryTree qt = QueryParser.parse(this, line);
+                        long t1 = System.nanoTime();
                         processQuery(qt, out);
+                        long t2 = System.nanoTime();
+                        Global.PROFILER.incrementType(Profiler.Type.PROCESSING, t2-t1);
                     }catch (UnableToParseException e) {
                             out.println("Unable to parse your command!"); // TODO: More information
                     }
@@ -287,6 +291,7 @@ public class NodeServer {
             try {
                 while (op.hasNext()) {
                     Tuple t = op.next();
+                    outputStream.println("TIME: " + System.nanoTime());
                     outputStream.print(t.toString() + System.lineSeparator());
                 }
                 outputStream.println("END");
@@ -300,6 +305,7 @@ public class NodeServer {
                 //TODO: do error handling
 
             }
+
         }
     }
     

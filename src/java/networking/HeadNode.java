@@ -1,16 +1,11 @@
 package networking;
 
+import distributeddb.Profiler;
 import global.Global;
 import querytree.QueryParser;
 import querytree.QueryTree;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -135,6 +130,7 @@ public class HeadNode {
      */
     public void processQuery(QueryTree queryTree){
         final long startTime = System.nanoTime();
+
         AggregateResult aggResult = new AggregateResult(queryTree);
 
         List<Thread> workers = new ArrayList<>();
@@ -144,15 +140,26 @@ public class HeadNode {
             Thread t = new Thread(new NodeRequestWorker(ip, port, queryTree, new Function<String, Void>() {
                 @Override
                 public Void apply(String s) {
-                    System.out.println(s);
-                    if (queryTree.getRootType() == "AGGREGATE"){
+                    long t = System.nanoTime();
+                    if(s.startsWith("TIME")){
+                        long start = Long.parseLong(s.split(" ")[1]);
+                        Global.PROFILER.incrementType(Profiler.Type.TRANSFER, t-start);
+                    }
+                    else if (queryTree.getRootType() == "AGGREGATE"){
                         aggResult.merge(s);
+                    }
+                    else{
+                        System.out.println(s);
+
                     }
 //                    result.merge(s);
                     return null;
                 }
             }));
+            long t1 = System.nanoTime();
             t.start();
+            long t2 = System.nanoTime();
+            Global.PROFILER.incrementType(Profiler.Type.SOCKET, t2-t1);
             workers.add(t);
         }
         workers.forEach(t -> {
@@ -169,6 +176,7 @@ public class HeadNode {
         final long endTime = System.nanoTime();
         final long duration = endTime - startTime;
         System.out.println("Query time: " + (double)duration / 1000000.0 + "ms.");
+        Global.PROFILER.printStats();
     }
 
     public void addChildNodesFromFile(String fileName) {

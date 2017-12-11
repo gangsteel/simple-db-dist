@@ -1,5 +1,6 @@
 package distributeddb;
 
+import global.Global;
 import networking.Machine;
 import networking.NodeRequestWorker;
 import networking.NodeServer;
@@ -128,8 +129,14 @@ public class GlobalSeqScan implements OpIterator {
                 @Override
                 public Void apply(String s) {
                     // TODO: fix the parsing
+                    long tend = System.nanoTime();
+                    if (s.startsWith("TIME")){
+                        long start = Long.parseLong(s.split(" ")[1]);
+                        Global.PROFILER.incrementType(Profiler.Type.TRANSFER, tend-start);
+                    }
                     String[] parsed = s.split(" ");
                     Tuple t = new Tuple(Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(tableName)));
+
                     for (int i = 0; i < parsed.length; i++) {
                         t.setField(i, new IntField(Integer.parseInt(parsed[i])));
                     }
@@ -143,7 +150,10 @@ public class GlobalSeqScan implements OpIterator {
             });
             Thread thread = new Thread(worker);
             queue.addWorker(thread);
+            long t1 = System.nanoTime();
             thread.start();
+            long t2 = System.nanoTime();
+            Global.PROFILER.incrementType(Profiler.Type.SOCKET, t2-t1);
         }
     }
 

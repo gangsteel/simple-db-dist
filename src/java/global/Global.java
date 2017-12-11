@@ -1,5 +1,6 @@
 package global;
 
+import distributeddb.Profiler;
 import simpledb.TransactionId;
 
 import java.util.ArrayList;
@@ -12,6 +13,9 @@ public class Global {
 
     // For distributed, we only have one transaction per machine.
     public static final TransactionId TRANSACTION_ID = new TransactionId();
+
+
+    public static final Profiler PROFILER= new Profiler();
 
     // IP Address for localhost
     public static final String LOCALHOST = "127.0.0.1";
