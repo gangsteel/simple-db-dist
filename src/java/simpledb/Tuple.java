@@ -95,6 +95,19 @@ public class Tuple implements Serializable {
     }
 
     /**
+     * Uses StringBuilder to generate string version of Tuple for performance improvement
+     * @return
+     */
+
+    public String fastToString(){
+        StringBuilder s = new StringBuilder();
+        for (Field f: fields){
+            s.append(f + " ");
+        }
+        return s.toString();
+    }
+
+    /**
      * @return
      *        An iterator which iterates over all the fields of this tuple
      * */
