@@ -1,5 +1,5 @@
 @skip whitespace {
-    commands ::= scan | filter | aggregate | join;
+    commands ::= scan | filter | aggregate | join | hash_join;
     scan ::= 'SCAN' '(' words ')';
     filter ::= 'FILTER' '(' commands ',' number pred number ')';
     aggregate ::= 'AGGREGATE' '(' commands ',' number ',' aggregator ')';

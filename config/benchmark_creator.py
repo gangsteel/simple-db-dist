@@ -92,6 +92,7 @@ def hash_partition(tuples, col_num, num_partitions):
   partitions = defaultdict(list)
   for i, hash_val in enumerate(hash_divisions):
     partitions[i%num_partitions] += hash_divisions[hash_val]
+
   return partitions
 
 

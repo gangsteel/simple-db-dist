@@ -1,7 +1,6 @@
 package performance;
 
 import global.Global;
-import net.sf.antcontrib.antserver.server.Server;
 import simpledb.IntField;
 import simpledb.Tuple;
 import simpledb.TupleDesc;
