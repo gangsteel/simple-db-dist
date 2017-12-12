@@ -140,13 +140,7 @@ public class HeadNode {
             Thread t = new Thread(new NodeRequestWorker(ip, port, queryTree, new Function<String, Void>() {
                 @Override
                 public Void apply(String s) {
-                    long tend = System.nanoTime();
-                    if(s.startsWith("TIME")){
-                        long start = Long.parseLong(s.split(" ")[1]);
-                        System.out.println("time " + (tend-start));
-                        Global.PROFILER.incrementType(Profiler.Type.TRANSFER, tend-start);
-                    }
-                    else if (queryTree.getRootType() == "AGGREGATE"){
+                    if (queryTree.getRootType() == "AGGREGATE"){
                         aggResult.merge(s);
                     }
                     else{
@@ -157,10 +151,7 @@ public class HeadNode {
                     return null;
                 }
             }));
-            long t1 = System.nanoTime();
             t.start();
-            long t2 = System.nanoTime();
-            Global.PROFILER.incrementType(Profiler.Type.SOCKET, t2-t1);
             workers.add(t);
         }
         workers.forEach(t -> {
@@ -177,7 +168,7 @@ public class HeadNode {
         final long endTime = System.nanoTime();
         final long duration = endTime - startTime;
         System.out.println("Query time: " + (double)duration / 1000000.0 + "ms.");
-        Global.PROFILER.printStats();
+//        Global.PROFILER.printStats();
     }
 
     public void addChildNodesFromFile(String fileName) {

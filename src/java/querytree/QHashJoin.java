@@ -45,4 +45,10 @@ public class QHashJoin implements QueryTree{
     public String getRootType() {
         return "HASH_JOIN";
     }
+
+    @Override
+    public String toString() {
+        return String.format("HASH_JOIN(%s, %s, %d %s %d)", child1.toString(), child2.toString(), joinPredicate.getField1(),
+                joinPredicate.getOperator().toString(), joinPredicate.getField2());
+    }
 }

@@ -78,7 +78,6 @@ public class QueryParser {
                 return QueryTree.join(child1, child2, colNum1, op, colNum2);
             }
             case HASH_JOIN:{
-                System.out.println("got here");
                 final List<ParseTree<QueryGrammar>> children = tree.children();
                 final QueryTree child1 = makeQueryTree(node, children.get(0), useSimpleDb);
                 final QueryTree child2 = makeQueryTree(node, children.get(1), useSimpleDb);
