@@ -1,17 +1,18 @@
-package networking;
+package performance;
 
 import global.Global;
+import net.sf.antcontrib.antserver.server.Server;
 import simpledb.IntField;
 import simpledb.Tuple;
 import simpledb.TupleDesc;
 import simpledb.Type;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 
 /**
  * Created by aditisri on 12/11/17.
@@ -21,20 +22,49 @@ import java.net.Socket;
  * Meant to help figure out how to improve performance. Can test latency with different number of tuples and different tuple sizes
  */
 public class LatencyTest {
-    static long totalLatency = 0;
-    static int numTuples = 10000;
-    static int numFields = 1000;
-    static int numChildNodes = 3;
-    static int[] ports = new int[numChildNodes];
-    static String randomTupleString = null;
+    private long totalLatency;
+    private int numTuples;
+    private int numFields;
+    private int numChildNodes;
+    private int[] ports;
+    private String randomTupleString = null;
+    private boolean isComplete;
+    private List<ServerSocket> sockets;
 
-    public static void setPorts(){
+    public LatencyTest(int numTuples, int numFields, int numChildNodes){
+        this.totalLatency = 0;
+        this.numTuples = numTuples;
+        this.numFields = numFields;
+        this.numChildNodes = numChildNodes;
+        this.ports = new int[numChildNodes];
+        this.isComplete = false;
+        setRandomTupleString();
+        setPorts();
+        this.sockets = new ArrayList<>();
+    }
+
+    public boolean isComplete(){
+        return this.isComplete;
+    }
+
+    public synchronized void closeServerSockets(){
+        for (ServerSocket s:sockets){
+            try {
+                s.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        sockets = new ArrayList<>();
+    }
+
+    private void setPorts(){
         for (int i = 0; i<numChildNodes; i++){
             ports[i] = 8000+i+1;
         }
     }
 
-    public static void setRandomTupleString() {
+    private void setRandomTupleString() {
         Type[] types = new Type[numFields];
         for (int i=0; i<numFields;i++){
             types[i] = Type.INT_TYPE;
@@ -47,20 +77,21 @@ public class LatencyTest {
         randomTupleString = testTuple.toString();
     }
 
-    public static synchronized void incrementLatency(long delta) {
+    public synchronized void incrementLatency(long delta) {
         totalLatency += delta;
     }
 
-    public static long getAverageLatency(int numTuples) {
+    public long getAverageLatency() {
         return totalLatency / numTuples;
     }
 
-    public static void startServer(int port) {
+    public void startServer(int port) {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     ServerSocket server = new ServerSocket(port);
+                    sockets.add(server);
                     while (true) {
                         Socket sSocket = server.accept();
                         Thread handler = new Thread(new Runnable() {
@@ -69,10 +100,13 @@ public class LatencyTest {
                                 try {
                                     BufferedReader in = new BufferedReader(new InputStreamReader(sSocket.getInputStream()));
                                     PrintWriter out = new PrintWriter(sSocket.getOutputStream(), true);
-                                    for (int i = 0; i < numTuples; i++) {
+                                    for (int i = 0; i < numTuples/numChildNodes; i++) {
                                         out.println(randomTupleString);
                                     }
                                     out.println("DONE");
+                                    out.close();
+                                    in.close();
+                                    sSocket.close();
 
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -90,20 +124,19 @@ public class LatencyTest {
         t.start();
     }
 
-    public static void printStats() {
+    public void printStats() {
         System.out.println("Total Latency(rtt) " + totalLatency + "ns");
-        System.out.println("Avg. Latency(rtt) " + getAverageLatency(numTuples) + "ns");
+        System.out.println("Avg. Latency(rtt) " + getAverageLatency() + "ns");
     }
 
-
-    public static void main(String[] args) {
-        setRandomTupleString();
-        setPorts();
-
-        for(int port:ports){
+    public void initializeServers(){
+        for (int port: ports){
             startServer(port);
         }
+    }
 
+    public void runTest(){
+        initializeServers();
         Thread[] threads = new Thread[ports.length];
         int counter = 0;
         for (int port : ports) {
@@ -118,7 +151,7 @@ public class LatencyTest {
                         BufferedReader in = new BufferedReader(new InputStreamReader(cSocket.getInputStream()));
 
                         for (String line = in.readLine(); !line.equals("DONE"); line = in.readLine()) {
-                            System.out.println(line);
+                            // just wait
                         }
 
                         long endTime = System.nanoTime();
@@ -140,7 +173,59 @@ public class LatencyTest {
                 e.printStackTrace();
             }
         }
+//        closeServerSockets();
+        this.isComplete = true;
         printStats();
+        writeStatsToFile();
+    }
+
+    public void writeStatsToFile(){
+        String stats = "" + numTuples + " " + numFields + " " + numChildNodes + " " + getAverageLatency() + " " + totalLatency;
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("src/java/performance/latencyTestResults.txt", true));
+            bw.write(stats);
+            bw.newLine();
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+
+    public static void main(String[] args) {
+        List<LatencyTest> tests = new ArrayList<>();
+        new LatencyTest(1, 2, 1);
+        // Increase number of tuples
+//        tests.add(new LatencyTest(1, 10, 1));
+//        tests.add(new LatencyTest(10, 10, 1));
+//        tests.add(new LatencyTest(100, 10, 1));
+//        tests.add(new LatencyTest(1000, 10, 1));
+//        tests.add(new LatencyTest(10000, 10, 1));
+
+//        // Increase number of fields
+//        tests.add(new LatencyTest(1000, 1, 1));
+//        tests.add(new LatencyTest(1000, 10, 1));
+//        tests.add(new LatencyTest(1000, 100, 1));
+//        tests.add(new LatencyTest(1000, 1000, 1));
+//        tests.add(new LatencyTest(1000, 10000, 1));
+//
+//        // Increase number of child nodes
+//        tests.add(new LatencyTest(10000, 100, 1));
+//        tests.add(new LatencyTest(10000, 100, 5));
+//        tests.add(new LatencyTest(10000, 100, 10));
+//        tests.add(new LatencyTest(10000, 100, 20));
+        tests.add(new LatencyTest(10000, 100, 50));
+
+
+        for (LatencyTest test : tests){
+            test.runTest();
+            while(!test.isComplete()){
+                //just wait
+            }
+        }
+
         System.exit(1);
     }
 }
