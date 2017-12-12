@@ -151,9 +151,11 @@ public class HashEquiJoin extends Operator {
         }
 
         // child2 is done: advance child1
-        child2.rewind();
-        if (loadMap()) {
-            return fetchNext();
+        if (child1.hasNext()) { // only need to load map/rewind child2 if child1 is not done
+            child2.rewind();
+            if (loadMap()) {
+                return fetchNext();
+            }
         }
 
         return null;
