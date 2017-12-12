@@ -203,7 +203,7 @@ public class NodeServer {
                                 Socket s = new Socket(destinaton.ipAddress, destinaton.port);
                                 BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                                 PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-                                out.println("WRITE " + "TUPLE " + t.toString() + " TABLE " + baseTableName);
+                                out.println("WRITE " + "TUPLE " + t.fastToString() + " TABLE " + baseTableName);
                                 out.println("DONE");
                                 for (String line = in.readLine(); !line.equals("DONE"); in.readLine()) {
                                     //TODO: do something here probably
@@ -267,7 +267,7 @@ public class NodeServer {
                     Tuple t = new Tuple(new TupleDesc(typeArr, fieldArr));
                     t.setField(0, new IntField(count));
                     t.setField(1, new IntField(sum));
-                    outputStream.println(t.toString());
+                    outputStream.println(t.fastToString());
                     outputStream.println("END");
                 }
             } catch (DbException e) {
@@ -294,7 +294,7 @@ public class NodeServer {
                     System.out.println("processing " + (t2-t1));
                     Global.PROFILER.incrementType(Profiler.Type.PROCESSING, t2-t1);
                     outputStream.println("TIME: " + System.nanoTime());
-                    outputStream.print(t.toString() + System.lineSeparator());
+                    outputStream.print(t.fastToString() + System.lineSeparator());
                 }
                 outputStream.println("END");
             } catch (DbException e) {

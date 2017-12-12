@@ -68,7 +68,6 @@ public class FastSerializationTest {
     }
 
 
-
     public static void main(String[] args){
         List<FastSerializationTest> tests = new ArrayList<>();
         tests.add(new FastSerializationTest(1));
