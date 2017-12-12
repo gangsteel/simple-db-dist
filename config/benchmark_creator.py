@@ -1,12 +1,13 @@
 from heap_file_creator import *
 from random import shuffle
+from collections import defaultdict
 from glob import glob
 from shutil import rmtree
 import os
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 
-def create_benchmark(tuples_of_each_table, partitioning_of_each_table, randomize=True):
+def create_benchmark(tuples_of_each_table, partitioning_of_each_table, hash_join_col=None, randomize=True):
   '''
   Creates a benchmark. You MUST make sure that this method is called in the /config directory.
 
@@ -59,11 +60,19 @@ def create_benchmark(tuples_of_each_table, partitioning_of_each_table, randomize
     # Randomize the tuples if necessary before partitioning
     if randomize: shuffle(tuples)
 
+    hash_partitioning = None
+    if hash_join_col:
+      hash_partitioning = hash_partition(tuples, hash_join_col, num_ports)
+
     # Create partitioned files
     offset = 0
     for pidx in xrange(num_ports):
       num_rows = partitioning[pidx]
-      partition_tuples = tuples[offset:offset+num_rows]
+      partition_tuples = None
+      if hash_partitioning:
+        partition_tuples = hash_partitioning[pidx]
+      else:
+        partition_tuples = tuples[offset:offset+num_rows]
       offset += num_rows
       partition_dir = os.path.join(my_path, "child/%d" % (starting_port + pidx))
       table_name = "test.%d" % tidx
@@ -74,6 +83,20 @@ def create_benchmark(tuples_of_each_table, partitioning_of_each_table, randomize
       # Also write/append to catalog.txt
       with open(os.path.join(partition_dir, 'catalog.txt'), 'a') as f:
         f.write('%s (%s)\n' % (table_name, ', '.join(map(lambda i: 'f%d int' % i, xrange(1,num_fields+1)))))
+
+def hash_partition(tuples, col_num, num_partitions):
+  hash_divisions = defaultdict(list)
+  ideal_tuples_per_partition = len(tuples)/num_partitions
+  for tuple in tuples:
+    hash_divisions[tuple[col_num]].append(tuple)
+  partitions = defaultdict(list)
+  for i, hash_val in enumerate(hash_divisions):
+    partitions[i%num_partitions] += hash_divisions[hash_val]
+  return partitions
+
+
+
+
 
 def _make_dir_if_not_exists(d):
   if not os.path.exists(d):

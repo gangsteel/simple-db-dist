@@ -14,7 +14,7 @@ num_fields is_string time(ns)
 60000 false 1033683958
 60000 true 11374113753
 
-(did these with fast toString)
+(did these with fast toString)- huge difference
 
 1 true 1401104
 10 true 1928033

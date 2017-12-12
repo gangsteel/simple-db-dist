@@ -4,6 +4,7 @@
     filter ::= 'FILTER' '(' commands ',' number pred number ')';
     aggregate ::= 'AGGREGATE' '(' commands ',' number ',' aggregator ')';
     join ::= 'JOIN' '(' commands ',' commands ',' number pred number ')';
+    hash_join ::= 'HASH_JOIN' '(' commands ',' commands ',' number pred number ')';
 }
 
 words ::= ([A-Z] | [a-z] | [0-9] | [_.-])+;

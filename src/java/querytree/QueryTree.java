@@ -43,6 +43,10 @@ public interface QueryTree {
         return new QJoin(child1, child2, colNum1, op, colNum2);
     }
 
+    public static QueryTree hashJoin(QueryTree child1, QueryTree child2, int colNum1, Predicate.Op op, int colNum2){
+        return new QHashJoin(child1, child2, colNum1, op, colNum2);
+    }
+
     public OpIterator getRootOp();
 
     public void setIsGlobal(boolean isGlobal);
