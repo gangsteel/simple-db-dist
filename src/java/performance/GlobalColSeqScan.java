@@ -19,23 +19,25 @@ import java.util.function.Function;
 /**
  * Created by aditisri on 12/12/17.
  */
-public class SemiJoin {
+public class GlobalColSeqScan implements OpIterator{
     private static final long serialVersionUID = 1L;
     private final TransactionId tid;
     private NodeServer node;
     private String tableName;
     private String tableAlias;
+    private int colNum;
 
     // Fields for outputting tuples
     private DbFileIterator tupleIterator;
-    private SemiJoin.TupleQueue queue;
+    private GlobalColSeqScan.TupleQueue queue;
 
-    public SemiJoin(TransactionId tid, NodeServer node, String tableName, String tableAlias){
+    public GlobalColSeqScan(TransactionId tid, NodeServer node, String tableName, String tableAlias, int colNum){
         this.tid = tid;
         this.node = node;
         this.tableName = tableName;
         this.tableAlias = tableAlias;
         this.tupleIterator = Database.getCatalog().getDatabaseFile(Database.getCatalog().getTableId(tableName)).iterator(tid);
+        this.colNum = colNum;
 
     }
 
@@ -112,19 +114,14 @@ public class SemiJoin {
     }
 
     private void resetQueuing() {
-        queue = new SemiJoin.TupleQueue();
+        queue = new GlobalColSeqScan.TupleQueue();
         List<Machine> references = node.getReferences();
         for (Machine machine : references) {
             NodeRequestWorker worker = new NodeRequestWorker(machine.ipAddress, machine.port,
-                    QueryTree.scan(null, tableName, tableAlias), new Function<String, Void>() {
+                    QueryTree.colScan(null, tableName, tableAlias, colNum), new Function<String, Void>() {
                 @Override
                 public Void apply(String s) {
                     // TODO: fix the parsing
-                    long tend = System.nanoTime();
-                    if (s.startsWith("TIME")){
-                        long start = Long.parseLong(s.split(" ")[1]);
-                        Global.PROFILER.incrementType(Profiler.Type.TRANSFER, tend-start);
-                    }
                     String[] parsed = s.split(" ");
                     Tuple t = new Tuple(Database.getCatalog().getTupleDesc(Database.getCatalog().getTableId(tableName)));
 
@@ -141,10 +138,7 @@ public class SemiJoin {
             });
             Thread thread = new Thread(worker);
             queue.addWorker(thread);
-            long t1 = System.nanoTime();
             thread.start();
-            long t2 = System.nanoTime();
-            Global.PROFILER.incrementType(Profiler.Type.SOCKET, t2-t1);
         }
     }
 

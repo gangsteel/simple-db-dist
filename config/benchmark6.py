@@ -3,19 +3,19 @@ from benchmark_creator import *
 from random import *
 
 if __name__ == '__main__':
-    num_tuples1 = 100
+    num_tuples1 = 1000
     num_fields1 = 10
     t1_tuples = [ tuple([randint(0,1) for i in xrange(num_fields1)]) for j in xrange(num_tuples1) ]
 
-    num_tuples2 = 100
+    num_tuples2 = 1000
     num_fields2 = 10
     t2_tuples = [ tuple([randint(0,1) for i in xrange(num_fields2)]) for j in xrange(num_tuples2) ]
 
-    num_tuples3 = 100
+    num_tuples3 = 1000
     num_fields3 = 10
     t3_tuples = [ tuple([randint(0,1) for i in xrange(num_fields3)]) for j in xrange(num_tuples3) ]
 
-    num_tuples4 = 100
+    num_tuples4 = 1000
     num_fields4 = 10
     t4_tuples = [ tuple([randint(0,1) for i in xrange(num_fields4)]) for j in xrange(num_tuples3) ]
 

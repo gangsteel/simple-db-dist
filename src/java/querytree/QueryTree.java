@@ -30,6 +30,10 @@ public interface QueryTree {
         // TODO: Alias must be the same as name? It seems that eventually, we pass in the alias to the other nodes.
         return new QScan(node, name, alias, false);
     }
+
+    public static QueryTree colScan(NodeServer node, String name, String alias, int colNum){
+        return new QSemiScan(node, name, alias, colNum, false);
+    }
     
     public static QueryTree filter(QueryTree child, int colNum, Predicate.Op pred, Field operand) {
         return new QFilter(child, colNum, pred, operand);

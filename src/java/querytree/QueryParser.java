@@ -22,7 +22,7 @@ public class QueryParser {
     private QueryParser() {
     } // This should be a static class
 
-    private enum QueryGrammar {COMMANDS, SCAN, FILTER, AGGREGATE, WORDS, NUMBER, PRED, AGGREGATOR, WHITESPACE, JOIN, HASH_JOIN};
+    private enum QueryGrammar {COMMANDS, SCAN, FILTER, AGGREGATE, WORDS, NUMBER, PRED, AGGREGATOR, WHITESPACE, JOIN, HASH_JOIN, SEMISCAN};
 
     private static final Parser<QueryGrammar> PARSER = makeParser();
 
@@ -52,6 +52,11 @@ public class QueryParser {
             case SCAN: {
                 final String tableName = tree.children().get(0).text();
                 return QueryTree.scan(node, tableName, tableName, useSimpleDb);
+            }
+            case SEMISCAN: {
+                final String tableName = tree.children().get(0).text();
+                final int colNum = Integer.parseInt(tree.children().get(1).text());
+                return QueryTree.colScan(node, tableName, tableName, colNum);
             }
             case FILTER: {
                 final List<ParseTree<QueryGrammar>> children = tree.children();

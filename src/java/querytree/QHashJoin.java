@@ -27,17 +27,19 @@ public class QHashJoin implements QueryTree{
     @Override
     //TODO: just copied for now might need to change later maybe always set to false? never need global for hash join
     public void setIsGlobal(boolean isGlobal) {
-        if (isGlobal) {
-            child1.setIsGlobal(true);
-            child2.setIsGlobal(true);
-        }
-        else {
-            //child1.setIsGlobal(false);
-            //child2.setIsGlobal(true);
-            child1.setIsGlobal(true);
-            child2.setIsGlobal(false);
-            // Possible improvement: switch the global seq between left and right
-        }
+        child1.setIsGlobal(false);
+        child2.setIsGlobal(false);
+//        if (isGlobal) {
+//            child1.setIsGlobal(true);
+//            child2.setIsGlobal(true);
+//        }
+//        else {
+//            //child1.setIsGlobal(false);
+//            //child2.setIsGlobal(true);
+//            child1.setIsGlobal(true);
+//            child2.setIsGlobal(false);
+//            // Possible improvement: switch the global seq between left and right
+//        }
 
     }
 
